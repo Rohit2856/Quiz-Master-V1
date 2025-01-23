@@ -88,12 +88,6 @@ Note: The above fields are not exhaustive. Students can add more fields as per t
 Application Wireframe
 Quiz Master
 
- 
-
-
-Note:
-The provided wireframe is intended only to illustrate the application's flow and demonstrate what should appear when a user navigates between pages.
-
 Replication of the exact views is NOT mandatory.
 Students are encouraged to work on their own front-end ideas and designs while maintaining the application's intended functionality and flow.
 Core Functionalities
