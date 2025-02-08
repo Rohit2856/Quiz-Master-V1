@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     full_name = db.Column(db.String(100), nullable=False)
     qualification = db.Column(db.String(100))
     dob = db.Column(db.Date)
+    is_admin = db.Column(db.Boolean, default=False)
 
 # Admin Model
 class Admin(UserMixin, db.Model):
