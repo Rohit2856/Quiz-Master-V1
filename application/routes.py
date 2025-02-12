@@ -105,7 +105,171 @@ def logout():
 def user_dashboard():
     return render_template('user_dashboard.html')
 
-@app.route('/admin_dashboard')
+# ========== Milestone 3: Admin Management Routes ==========
+# Admin Dashboard Home
+@app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    if not isinstance(current_user, Admin):
+        abort(403)
+    return render_template('admin/dashboard.html')
+
+# -------------------------
+# Subject Management
+# -------------------------
+@app.route('/admin/subjects', methods=['GET', 'POST'])
+@login_required
+def manage_subjects():
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    # Create Subject
+    if request.method == 'POST':
+        new_subject = Subject(
+            name=request.form.get('subject_name'),
+            description=request.form.get('subject_desc')
+        )
+        db.session.add(new_subject)
+        db.session.commit()
+        flash('New subject created!', 'success')
+        return redirect(url_for('manage_subjects'))
+    
+    # List Subjects
+    subjects = Subject.query.order_by(Subject.id).all()
+    return render_template('admin/subjects.html', subjects=subjects)
+
+@app.route('/admin/subjects/<int:subject_id>/delete', methods=['POST'])
+@login_required
+def delete_subject(subject_id):
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    subject = Subject.query.get_or_404(subject_id)
+    db.session.delete(subject)
+    db.session.commit()
+    flash('Subject deleted!', 'success')
+    return redirect(url_for('manage_subjects'))
+
+# -------------------------
+# Chapter Management
+# -------------------------
+@app.route('/admin/chapters', methods=['GET', 'POST'])
+@login_required
+def manage_chapters():
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    # Create Chapter
+    if request.method == 'POST':
+        new_chapter = Chapter(
+            name=request.form.get('chapter_name'),
+            description=request.form.get('chapter_desc'),
+            subject_id=request.form.get('subject_id')
+        )
+        db.session.add(new_chapter)
+        db.session.commit()
+        flash('New chapter added!', 'success')
+        return redirect(url_for('manage_chapters'))
+    
+    # List Chapters with Subjects
+    chapters = Chapter.query.join(Subject).order_by(Chapter.id).all()
+    subjects = Subject.query.all()
+    return render_template('admin/chapters.html', 
+                         chapters=chapters, 
+                         subjects=subjects)
+
+@app.route('/admin/chapters/<int:chapter_id>/delete', methods=['POST'])
+@login_required
+def delete_chapter(chapter_id):
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    chapter = Chapter.query.get_or_404(chapter_id)
+    db.session.delete(chapter)
+    db.session.commit()
+    flash('Chapter deleted!', 'success')
+    return redirect(url_for('manage_chapters'))
+
+# -------------------------
+# Quiz Management
+# -------------------------
+@app.route('/admin/quizzes', methods=['GET', 'POST'])
+@login_required
+def manage_quizzes():
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    # Create Quiz
+    if request.method == 'POST':
+        new_quiz = Quiz(
+            chapter_id=request.form.get('chapter_id'),
+            time_duration=request.form.get('duration'),
+            remarks=request.form.get('remarks')
+        )
+        db.session.add(new_quiz)
+        db.session.commit()
+        flash('New quiz created!', 'success')
+        return redirect(url_for('manage_quizzes'))
+    
+    # List Quizzes with Chapters
+    quizzes = Quiz.query.join(Chapter).order_by(Quiz.id).all()
+    chapters = Chapter.query.all()
+    return render_template('admin/quizzes.html', 
+                         quizzes=quizzes, 
+                         chapters=chapters)
+
+@app.route('/admin/quizzes/<int:quiz_id>/delete', methods=['POST'])
+@login_required
+def delete_quiz(quiz_id):
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    quiz = Quiz.query.get_or_404(quiz_id)
+    db.session.delete(quiz)
+    db.session.commit()
+    flash('Quiz deleted!', 'success')
+    return redirect(url_for('manage_quizzes'))
+
+# -------------------------
+# Question Management
+# -------------------------
+@app.route('/admin/questions', methods=['GET', 'POST'])
+@login_required
+def manage_questions():
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    # Create Question
+    if request.method == 'POST':
+        new_question = Question(
+            quiz_id=request.form.get('quiz_id'),
+            question_statement=request.form.get('question'),
+            option1=request.form.get('option1'),
+            option2=request.form.get('option2'),
+            option3=request.form.get('option3'),
+            option4=request.form.get('option4'),
+            correct_option=int(request.form.get('correct_option'))
+        )
+        db.session.add(new_question)
+        db.session.commit()
+        flash('New question added!', 'success')
+        return redirect(url_for('manage_questions'))
+    
+    # List Questions with Quizzes
+    questions = Question.query.join(Quiz).order_by(Question.id).all()
+    quizzes = Quiz.query.all()
+    return render_template('admin/questions.html', 
+                         questions=questions, 
+                         quizzes=quizzes)
+
+@app.route('/admin/questions/<int:question_id>/delete', methods=['POST'])
+@login_required
+def delete_question(question_id):
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    question = Question.query.get_or_404(question_id)
+    db.session.delete(question)
+    db.session.commit()
+    flash('Question deleted!', 'success')
+    return redirect(url_for('manage_questions'))

@@ -1,0 +1,16 @@
+{% extends "base.html" %}  <!-- extends from base template to reference -->
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Admin Dashboard</h1>
+    <div class="list-group">
+        <a href="/admin/subjects" class="list-group-item list-group-item-action">Manage Subjects</a>
+        <a href="/admin/chapters" class="list-group-item list-group-item-action">Manage Chapters</a>
+        <a href="/admin/quizzes" class="list-group-item list-group-item-action">Manage Quizzes</a>
+        <a href="/admin/questions" class="list-group-item list-group-item-action">Manage Questions</a>
+    </div>
+</div>
+{% endblock %}
+
