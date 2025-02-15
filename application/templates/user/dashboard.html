@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Available Quizzes</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Quiz</th>
+                <th>Chapter</th>
+                <th>Subject</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quiz in quizzes %}
+            <tr>
+                <td>Quiz {{ quiz.id }}</td>
+                <td>{{ quiz.chapter.name }}</td>
+                <td>{{ quiz.chapter.subject.name }}</td>
+                <td><a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Start</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

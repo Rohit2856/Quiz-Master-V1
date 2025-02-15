@@ -4,6 +4,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from .database import db
 from application.models import User, Admin 
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 @app.route('/initialize_db')
 def initialize_db():
@@ -100,13 +101,7 @@ def logout():
     flash('Logged out successfully!', 'success')
     return redirect(url_for('home'))
 
-@app.route('/user_dashboard')
-@login_required
-def user_dashboard():
-    return render_template('user_dashboard.html')
-
-# ========== Milestone 3: Admin Management Routes ==========
-# Admin Dashboard Home
+#  Creation of Admin Dashboard Home
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
@@ -134,7 +129,7 @@ def manage_subjects():
         flash('New subject created!', 'success')
         return redirect(url_for('manage_subjects'))
     
-    # List Subjects
+    # List of subjects
     subjects = Subject.query.order_by(Subject.id).all()
     return render_template('admin/subjects.html', subjects=subjects)
 
@@ -159,7 +154,7 @@ def manage_chapters():
     if not isinstance(current_user, Admin):
         abort(403)
     
-    # Create Chapter
+    # Create new chapter
     if request.method == 'POST':
         new_chapter = Chapter(
             name=request.form.get('chapter_name'),
@@ -171,7 +166,7 @@ def manage_chapters():
         flash('New chapter added!', 'success')
         return redirect(url_for('manage_chapters'))
     
-    # List Chapters with Subjects
+    # List of chapters with subjects
     chapters = Chapter.query.join(Subject).order_by(Chapter.id).all()
     subjects = Subject.query.all()
     return render_template('admin/chapters.html', 
@@ -199,7 +194,7 @@ def manage_quizzes():
     if not isinstance(current_user, Admin):
         abort(403)
     
-    # Create Quiz
+    # Create quiz form
     if request.method == 'POST':
         new_quiz = Quiz(
             chapter_id=request.form.get('chapter_id'),
@@ -211,7 +206,7 @@ def manage_quizzes():
         flash('New quiz created!', 'success')
         return redirect(url_for('manage_quizzes'))
     
-    # List Quizzes with Chapters
+    # List quizzes with chapters
     quizzes = Quiz.query.join(Chapter).order_by(Quiz.id).all()
     chapters = Chapter.query.all()
     return render_template('admin/quizzes.html', 
@@ -239,7 +234,7 @@ def manage_questions():
     if not isinstance(current_user, Admin):
         abort(403)
     
-    # Create Question
+    # Create question
     if request.method == 'POST':
         new_question = Question(
             quiz_id=request.form.get('quiz_id'),
@@ -255,7 +250,7 @@ def manage_questions():
         flash('New question added!', 'success')
         return redirect(url_for('manage_questions'))
     
-    # List Questions with Quizzes
+    # List questions with quizzes
     questions = Question.query.join(Quiz).order_by(Question.id).all()
     quizzes = Quiz.query.all()
     return render_template('admin/questions.html', 
@@ -273,3 +268,65 @@ def delete_question(question_id):
     db.session.commit()
     flash('Question deleted!', 'success')
     return redirect(url_for('manage_questions'))
+
+# -------------------------
+# User Dashboard
+# -------------------------
+@app.route('/user/dashboard', endpoint='user_dashboard')
+@login_required
+def user_dashboard():
+    if not isinstance(current_user, User):  # Ensure only regular users can access
+        abort(403)
+
+    # Fetch all available quizzes with their associated chapters and subjects
+    quizzes = Quiz.query.join(Chapter).join(Subject).all()
+    return render_template('user/dashboard.html', quizzes=quizzes)
+
+# -------------------------
+# Quiz attempt system
+# -------------------------
+@app.route('/quiz/<int:quiz_id>/start', methods=['GET', 'POST'])
+@login_required
+def start_quiz(quiz_id):
+    if not isinstance(current_user, User):
+        abort(403)
+
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+
+    if request.method == 'POST':
+        # Calculate score
+        total_score = 0
+        for question in questions:
+            user_answer = request.form.get(f'question_{question.id}')
+            if user_answer and int(user_answer) == question.correct_option:
+                total_score += 1
+
+        # Save score to database
+        new_score = Score(
+            quiz_id=quiz.id,
+            user_id=current_user.id,
+            total_scored=total_score,
+            time_stamp_of_attempt=datetime.utcnow()  # Ensure you import datetime
+        )
+        db.session.add(new_score)
+        db.session.commit()
+
+        flash(f'You scored {total_score}/{len(questions)}!', 'success')
+        return redirect(url_for('user_dashboard'))
+
+    return render_template('user/quiz.html', quiz=quiz, questions=questions)
+
+# -------------------------
+# View quiz scores
+# -------------------------
+@app.route('/user/scores')
+@login_required
+def view_scores():
+    if not isinstance(current_user, User):
+        abort(403)
+
+    # Fetch user's past quiz attempts and scores
+    scores = Score.query.filter_by(user_id=current_user.id).join(Quiz).join(Chapter).join(Subject).all()
+    return render_template('user/scores.html', scores=scores)
+

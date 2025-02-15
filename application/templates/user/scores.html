@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Scores{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Your Quiz Scores</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Quiz</th>
+                <th>Chapter</th>
+                <th>Subject</th>
+                <th>Date Attempted</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in scores %}
+            <tr>
+                <td>Quiz {{ score.quiz.id }}</td>
+                <td>{{ score.quiz.chapter.name }}</td>
+                <td>{{ score.quiz.chapter.subject.name }}</td>
+                <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>{{ score.total_scored }}/{{ score.quiz.questions|length }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
