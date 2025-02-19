@@ -2,36 +2,19 @@ from flask import current_app as app
 from flask import (render_template, request, redirect, url_for, flash, session, abort)
 from flask_login import login_user, login_required, logout_user, current_user
 from .database import db
-from application.models import User, Admin 
+from application.models import User, Admin, Quiz, Chapter, Subject, Question, Score
+from application.database import initialize_default_admin 
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 @app.route('/initialize_db')
 def initialize_db():
-    """
-    Route to initialize the database schema.
-    
-    This will create all tables defined in models.py.
-    
-    Warning: Running this route will drop all existing tables and recreate them.
-             Use with caution in production environments.
-    
-    Returns:
-        str: Success message after initializing the database.
-    """
-    
-    # Drop all existing tables (if any) and recreate them
     with app.app_context():
-        try:
-            # Drop all tables (for development purposes only!)
-            db.drop_all()
-            
-            # Create new tables based on models.py definitions
-            db.create_all()
-            
-            return "Database initialized successfully!"
-        except Exception as e:
-            return f"An error occurred while initializing the database: {str(e)}"
+        db.drop_all() # will drop all existing database tables
+        db.create_all() # will create new database tables from models.py
+        initialize_default_admin() 
+    return "Database initialized!"
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -275,12 +258,14 @@ def delete_question(question_id):
 @app.route('/user/dashboard', endpoint='user_dashboard')
 @login_required
 def user_dashboard():
-    if not isinstance(current_user, User):  # Ensure only regular users can access
-        abort(403)
-
-    # Fetch all available quizzes with their associated chapters and subjects
-    quizzes = Quiz.query.join(Chapter).join(Subject).all()
-    return render_template('user/dashboard.html', quizzes=quizzes)
+    try:
+        if not isinstance(current_user, User):
+            abort(403)
+        quizzes = Quiz.query.join(Chapter).join(Subject).all()
+        return render_template('user/dashboard.html', quizzes=quizzes)
+    except Exception as e:
+        app.logger.error(f"Error in user_dashboard: {str(e)}")
+        abort(500)
 
 # -------------------------
 # Quiz attempt system
@@ -330,3 +315,71 @@ def view_scores():
     scores = Score.query.filter_by(user_id=current_user.id).join(Quiz).join(Chapter).join(Subject).all()
     return render_template('user/scores.html', scores=scores)
 
+
+@app.route('/user/performance', methods=['GET'])
+@login_required
+def user_performance():
+    """Display user's quiz performance with detailed statistics"""
+    if not isinstance(current_user, User):
+        abort(403)
+
+    # get all attempts ordered by latest first
+    attempts = Score.query.filter_by(user_id=current_user.id)\
+                         .order_by(Score.time_stamp_of_attempt.desc())\
+                         .all()
+
+    performance_data = []
+    total_correct = 0
+    total_questions = 0
+    subject_stats = {}
+
+    for attempt in attempts:
+        quiz = Quiz.query.get(attempt.quiz_id)
+        chapter = Chapter.query.get(quiz.chapter_id)
+        subject = Subject.query.get(chapter.subject_id)
+        questions = Question.query.filter_by(quiz_id=quiz.id).all()
+        
+        # calculate attempt percentage
+        attempt_percent = (attempt.total_scored / len(questions)) * 100 if questions else 0
+        
+        # update totals
+        total_correct += attempt.total_scored
+        total_questions += len(questions)
+        
+        # update subject statistics
+        if subject.name not in subject_stats:
+            subject_stats[subject.name] = {
+                'total_attempts': 0,
+                'total_correct': 0,
+                'total_questions': 0
+            }
+        subject_stats[subject.name]['total_attempts'] += 1
+        subject_stats[subject.name]['total_correct'] += attempt.total_scored
+        subject_stats[subject.name]['total_questions'] += len(questions)
+
+        performance_data.append({
+            'date': attempt.time_stamp_of_attempt.strftime('%d %b %Y %H:%M'),
+            'subject': subject.name,
+            'chapter': chapter.name,
+            'score': f"{attempt.total_scored}/{len(questions)}",
+            'percentage': round(attempt_percent, 1)
+        })
+
+    # calculate overall statistics
+    overall_percentage = (total_correct / total_questions * 100) if total_questions > 0 else 0
+    subject_breakdown = []
+    
+    for subject, stats in subject_stats.items():
+        sub_percent = (stats['total_correct'] / stats['total_questions'] * 100) if stats['total_questions'] > 0 else 0
+        subject_breakdown.append({
+            'name': subject,
+            'attempts': stats['total_attempts'],
+            'accuracy': round(sub_percent, 1)
+        })
+
+    return render_template('user/performance.html',
+                         attempts=performance_data,
+                         total_attempts=len(attempts),
+                         overall_score=f"{total_correct}/{total_questions}",
+                         overall_percentage=round(overall_percentage, 1),
+                         subjects=subject_breakdown)

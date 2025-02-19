@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Your Performance Overview{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="performance-header mb-4">
+        <h2 class="mb-3">Your Learning Progress</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Attempts</h5>
+                        <p class="display-4">{{ total_attempts }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Overall Score</h5>
+                        <p class="display-4">{{ overall_score }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Overall Accuracy</h5>
+                        <p class="display-4">{{ overall_percentage }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="subject-breakdown mb-5">
+        <h4 class="mb-3">Subject-wise Performance</h4>
+        <div class="row">
+            {% for subject in subjects %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ subject.name }}</h5>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ subject.accuracy }}%"
+                                 aria-valuenow="{{ subject.accuracy }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ subject.accuracy }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            {{ subject.attempts }} attempts | 
+                            {{ subject.accuracy }}% accuracy
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="attempt-history">
+        <h4 class="mb-3">Detailed Attempt History</h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Subject</th>
+                        <th>Chapter</th>
+                        <th>Score</th>
+                        <th>Accuracy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts %}
+                    <tr>
+                        <td>{{ attempt.date }}</td>
+                        <td>{{ attempt.subject }}</td>
+                        <td>{{ attempt.chapter }}</td>
+                        <td>{{ attempt.score }}</td>
+                        <td>
+                            <span class="badge bg-{% if attempt.percentage >= 75 %}success{% elif attempt.percentage >= 50 %}warning{% else %}danger{% endif %}">
+                                {{ attempt.percentage }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            No quiz attempts recorded yet
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

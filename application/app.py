@@ -40,4 +40,4 @@ def create_app():
         # Otherwise, return regular user
         return User.query.get(int(user_id))
 
-    return app  # Return the Flask app instance
+    return app 
