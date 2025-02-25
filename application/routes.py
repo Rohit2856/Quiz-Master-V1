@@ -149,7 +149,7 @@ def manage_chapters():
         flash('New chapter added!', 'success')
         return redirect(url_for('manage_chapters'))
     
-    # List of chapters with subjects
+    # list of chapters with subjects
     chapters = Chapter.query.join(Subject).order_by(Chapter.id).all()
     subjects = Subject.query.all()
     return render_template('admin/chapters.html', 
@@ -177,7 +177,7 @@ def manage_quizzes():
     if not isinstance(current_user, Admin):
         abort(403)
     
-    # Create quiz form
+    # create quiz form
     if request.method == 'POST':
         new_quiz = Quiz(
             chapter_id=request.form.get('chapter_id'),
@@ -189,7 +189,7 @@ def manage_quizzes():
         flash('New quiz created!', 'success')
         return redirect(url_for('manage_quizzes'))
     
-    # List quizzes with chapters
+    # list quizzes with chapters
     quizzes = Quiz.query.join(Chapter).order_by(Quiz.id).all()
     chapters = Chapter.query.all()
     return render_template('admin/quizzes.html', 
@@ -217,7 +217,7 @@ def manage_questions():
     if not isinstance(current_user, Admin):
         abort(403)
     
-    # Create question
+    # create question
     if request.method == 'POST':
         new_question = Question(
             quiz_id=request.form.get('quiz_id'),
@@ -233,7 +233,7 @@ def manage_questions():
         flash('New question added!', 'success')
         return redirect(url_for('manage_questions'))
     
-    # List questions with quizzes
+    # list questions with quizzes
     questions = Question.query.join(Quiz).order_by(Question.id).all()
     quizzes = Quiz.query.all()
     return render_template('admin/questions.html', 
@@ -280,14 +280,14 @@ def start_quiz(quiz_id):
     questions = Question.query.filter_by(quiz_id=quiz_id).all()
 
     if request.method == 'POST':
-        # Calculate score
+        # to calculate score
         total_score = 0
         for question in questions:
             user_answer = request.form.get(f'question_{question.id}')
             if user_answer and int(user_answer) == question.correct_option:
                 total_score += 1
 
-        # Save score to database
+        # to save score to database
         new_score = Score(
             quiz_id=quiz.id,
             user_id=current_user.id,
@@ -311,7 +311,7 @@ def view_scores():
     if not isinstance(current_user, User):
         abort(403)
 
-    # Fetch user's past quiz attempts and scores
+    # to fetch user's past quiz attempts and scores
     scores = Score.query.filter_by(user_id=current_user.id).join(Quiz).join(Chapter).join(Subject).all()
     return render_template('user/scores.html', scores=scores)
 
@@ -323,7 +323,7 @@ def user_performance():
     if not isinstance(current_user, User):
         abort(403)
 
-    # get all attempts ordered by latest first
+    # to get all attempts ordered by latest first
     attempts = Score.query.filter_by(user_id=current_user.id)\
                          .order_by(Score.time_stamp_of_attempt.desc())\
                          .all()
@@ -339,14 +339,14 @@ def user_performance():
         subject = Subject.query.get(chapter.subject_id)
         questions = Question.query.filter_by(quiz_id=quiz.id).all()
         
-        # calculate attempt percentage
+        # to calculate attempt percentage
         attempt_percent = (attempt.total_scored / len(questions)) * 100 if questions else 0
         
-        # update totals
+        # to update total
         total_correct += attempt.total_scored
         total_questions += len(questions)
         
-        # update subject statistics
+        # to update subject statistic
         if subject.name not in subject_stats:
             subject_stats[subject.name] = {
                 'total_attempts': 0,
@@ -383,3 +383,62 @@ def user_performance():
                          overall_score=f"{total_correct}/{total_questions}",
                          overall_percentage=round(overall_percentage, 1),
                          subjects=subject_breakdown)
+
+
+@app.route('/admin/search', methods=['GET'])
+@login_required
+def admin_search():
+    if not isinstance(current_user, Admin):
+        abort(403)
+    
+    search_term = request.args.get('q', '')
+    search_type = request.args.get('type', 'users')
+
+    results = []
+    if search_term:
+        if search_type == 'users':
+            results = User.query.filter(
+                (User.username.ilike(f'%{search_term}%')) |
+                (User.full_name.ilike(f'%{search_term}%'))
+            ).all()
+        elif search_type == 'subjects':
+            results = Subject.query.filter(
+                Subject.name.ilike(f'%{search_term}%')
+            ).all()
+        elif search_type == 'quizzes':
+            results = Quiz.query.join(Chapter).filter(
+                Quiz.remarks.ilike(f'%{search_term}%')
+            ).all()
+        elif search_type == 'questions':
+            results = Question.query.filter(
+                Question.question_statement.ilike(f'%{search_term}%')
+            ).all()
+
+    return render_template('admin/search_results.html',
+                         search_term=search_term,
+                         search_type=search_type,
+                         results=results)
+
+@app.route('/search', methods=['GET'])
+@login_required
+def user_search():
+    search_term = request.args.get('q', '')
+    results = {
+        'subjects': [],
+        'quizzes': []
+    }
+
+    if search_term:
+        results['subjects'] = Subject.query.filter(
+            Subject.name.ilike(f'%{search_term}%')
+        ).all()
+        
+        results['quizzes'] = Quiz.query.join(Chapter).join(Subject).filter(
+            (Quiz.remarks.ilike(f'%{search_term}%')) |
+            (Chapter.name.ilike(f'%{search_term}%')) |
+            (Subject.name.ilike(f'%{search_term}%'))
+        ).all()
+
+    return render_template('user/search_results.html',
+                         search_term=search_term,
+                         results=results)

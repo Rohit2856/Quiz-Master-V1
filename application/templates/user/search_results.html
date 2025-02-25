@@ -1,0 +1,65 @@
+{% extends "user/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Search Results for "{{ search_term }}"</h3>
+    
+    <div class="search-sections">
+        {% if results.subjects %}
+        <div class="mb-5">
+            <h4>Subjects</h4>
+            <div class="row">
+                {% for subject in results.subjects %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ subject.name }}</h5>
+                            <p class="card-text">{{ subject.description|truncate(100) }}</p>
+                            <a href="{{ url_for('view_chapters', subject_id=subject.id) }}" 
+                               class="btn btn-outline-primary">
+                                View Chapters
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results.quizzes %}
+        <div class="mb-5">
+            <h4>Quizzes</h4>
+            <div class="row">
+                {% for quiz in results.quizzes %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ quiz.remarks }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                {{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}
+                            </h6>
+                            <p class="card-text">
+                                Duration: {{ quiz.time_duration }}<br>
+                                Available until: {{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}
+                            </p>
+                            <a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" 
+                               class="btn btn-primary">
+                                Attempt Quiz
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not results.subjects and not results.quizzes %}
+        <div class="alert alert-info mt-4">
+            No matching subjects or quizzes found
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
