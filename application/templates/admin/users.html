@@ -1,0 +1,69 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>User Management</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Last Seen</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {% if user.avatar %}
+                            <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
+                                 class="rounded-circle me-2" 
+                                 style="width: 40px; height: 40px; object-fit: cover">
+                            {% endif %}
+                            <div>
+                                <div>{{ user.username }}</div>
+                                <small class="text-muted">{{ user.email }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %}">
+                            {% if user.is_active %}Active{% else %}Disabled{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ user.last_seen.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary toggle-status"
+                                data-user-id="{{ user.id }}">
+                            {% if user.is_active %}Disable{% else %}Enable{% endif %}
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.toggle-status').forEach(button => {
+    button.addEventListener('click', async (e) => {
+        const userId = e.target.dataset.userId;
+        try {
+            const response = await fetch(`/admin/user/${userId}/toggle-status`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                location.reload(); // Refresh to show updated status
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+});
+</script>
+{% endblock %}

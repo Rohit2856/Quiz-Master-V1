@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Profile</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Avatar</label>
+            <input type="file" class="form-control" name="avatar" accept="image/*">
+            {% if current_user.avatar %}
+                <div class="mt-2">
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" 
+                         class="img-thumbnail" 
+                         style="max-width: 150px">
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Bio</label>
+            <textarea class="form-control" name="bio" rows="4"
+                      maxlength="500">{{ current_user.bio or '' }}</textarea>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" name="location"
+                       value="{{ current_user.location or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Website</label>
+                <input type="url" class="form-control" name="website"
+                       value="{{ current_user.website or '' }}">
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

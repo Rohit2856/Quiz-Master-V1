@@ -4,9 +4,12 @@ from flask_login import login_user, login_required, logout_user, current_user
 from .database import db
 from application.models import User, Admin, Quiz, Chapter, Subject, Question, Score
 from application.database import initialize_default_admin 
+from application.decorators import admin_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-
+from werkzeug.utils import secure_filename
+from flask import abort, request
+import os
 @app.route('/initialize_db')
 def initialize_db():
     with app.app_context():
@@ -86,7 +89,7 @@ def logout():
 
 #  Creation of Admin Dashboard Home
 @app.route('/admin/dashboard')
-@login_required
+@admin_required
 def admin_dashboard():
     if not isinstance(current_user, Admin):
         abort(403)
@@ -442,3 +445,54 @@ def user_search():
     return render_template('user/search_results.html',
                          search_term=search_term,
                          results=results)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        # to handle file upload
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and allowed_file(file.filename):
+                filename = f"{current_user.id}_{datetime.now().timestamp()}.{secure_filename(file.filename).split('.')[-1]}"
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                current_user.avatar = filename
+        
+        # to update other fields
+        current_user.bio = request.form.get('bio', current_user.bio)
+        current_user.location = request.form.get('location', current_user.location)
+        current_user.website = request.form.get('website', current_user.website)
+        
+        db.session.commit()
+        flash('Profile updated successfully', 'success')
+        return redirect(url_for('view_profile', username=current_user.username))
+
+    return render_template('profile/edit.html')
+
+@app.route('/profile/<username>')
+@login_required
+def view_profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('profile/view.html', 
+                         user=user,
+                         is_own_profile=(user.id == current_user.id))
+
+@app.route('/admin/users')
+@admin_required
+def manage_users():
+    users = User.query.order_by(User.created_at.desc()).all()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/user/<int:user_id>/toggle-status', methods=['POST'])
+@admin_required
+def toggle_user_status(user_id):
+    user = User.query.get_or_404(user_id)
+    user.is_active = not user.is_active
+    db.session.commit()
+    return '', 204  # No content for requests

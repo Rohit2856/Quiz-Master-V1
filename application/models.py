@@ -1,8 +1,8 @@
 from flask_login import UserMixin
-from application.database import db
-from datetime import datetime as dt
+from application.extensions import db
+from datetime import datetime, timezone
 
-# User Model
+# User Model (correct)
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -12,6 +12,17 @@ class User(UserMixin, db.Model):
     qualification = db.Column(db.String(100))
     dob = db.Column(db.Date)
     is_admin = db.Column(db.Boolean, default=False)
+    avatar = db.Column(db.String(200))
+    bio = db.Column(db.Text)
+    location = db.Column(db.String(100))
+    website = db.Column(db.String(200))
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    last_seen = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    def update_last_seen(self):
+        self.last_seen = datetime.now(timezone.utc)
+        db.session.commit()
 
 # Admin Model
 class Admin(UserMixin, db.Model):
@@ -41,7 +52,7 @@ class Quiz(db.Model):
     __tablename__ = 'quizzes'
     id = db.Column(db.Integer, primary_key=True)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapters.id'), nullable=False)
-    date_of_quiz = db.Column(db.DateTime, default=dt.utcnow)
+    date_of_quiz = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc)) 
     time_duration = db.Column(db.String(10))
     remarks = db.Column(db.Text)
 
@@ -55,7 +66,7 @@ class Question(db.Model):
     option2 = db.Column(db.String(200))
     option3 = db.Column(db.String(200))
     option4 = db.Column(db.String(200))
-    correct_option = db.Column(db.Integer)  # Stores the correct option (e.g., 1, 2, 3, or 4)
+    correct_option = db.Column(db.Integer)
 
 # Score Model
 class Score(db.Model):
@@ -63,5 +74,5 @@ class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    time_stamp_of_attempt = db.Column(db.DateTime, default=dt.utcnow)
+    time_stamp_of_attempt = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))  
     total_scored = db.Column(db.Integer)
