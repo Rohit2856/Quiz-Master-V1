@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 from application.extensions import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 # User Model (correct)
 class User(UserMixin, db.Model):
@@ -52,10 +52,18 @@ class Quiz(db.Model):
     __tablename__ = 'quizzes'
     id = db.Column(db.Integer, primary_key=True)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapters.id'), nullable=False)
-    date_of_quiz = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc)) 
-    time_duration = db.Column(db.String(10))
+    start_time = db.Column(db.DateTime, nullable=False)
+    duration = db.Column(db.Integer, nullable=False)  # In minutes
+    active = db.Column(db.Boolean, default=True)
     remarks = db.Column(db.Text)
 
+    @property
+    def end_time(self):
+        return self.start_time + timedelta(minutes=self.duration)
+    
+    def is_active(self):
+        now = datetime.utcnow()
+        return self.start_time <= now <= self.end_time
 # Question Model
 class Question(db.Model):
     __tablename__ = 'questions'

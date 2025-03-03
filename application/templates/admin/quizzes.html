@@ -1,0 +1,12 @@
+<!-- Date/time picker -->
+<input type="datetime-local" 
+       name="start_time"
+       value="{{ quiz.start_time.strftime('%Y-%m-%dT%H:%M') }}"
+       required>
+
+<!-- Duration input -->
+<input type="text" 
+       name="duration" 
+       pattern="\d{1,2}:\d{2}"
+       placeholder="HH:MM (e.g., 01:30)"
+       required>

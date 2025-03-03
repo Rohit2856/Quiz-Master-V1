@@ -1,0 +1,23 @@
+
+<script>
+const endTime = {{ session.quiz_end * 1000 }};  // Convert to milliseconds
+
+function updateTimer() {
+    const now = Date.now();
+    const remaining = Math.max(0, endTime - now);
+    
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    
+    document.getElementById('timer').textContent = 
+        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+    if (remaining <= 0) {
+        document.forms['quizForm'].submit();
+    }
+}
+
+// Update every second
+setInterval(updateTimer, 1000);
+updateTimer(); // Initial call
+</script>
