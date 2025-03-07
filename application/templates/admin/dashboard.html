@@ -1,16 +1,35 @@
 {% extends "base.html" %}  <!-- extends from base template to reference -->
-
-{% block title %}Admin Dashboard{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h1>Admin Dashboard</h1>
-    <div class="list-group">
-        <a href="/admin/subjects" class="list-group-item list-group-item-action">Manage Subjects</a>
-        <a href="/admin/chapters" class="list-group-item list-group-item-action">Manage Chapters</a>
-        <a href="/admin/quizzes" class="list-group-item list-group-item-action">Manage Quizzes</a>
-        <a href="/admin/questions" class="list-group-item list-group-item-action">Manage Questions</a>
+<div class="container mt-4">
+    <h2>Admin Control Panel</h2>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Subjects</h5>
+                    <p class="card-text">Manage quiz subjects and categories</p>
+                    <a href="{{ url_for('manage_subjects') }}" class="btn btn-primary">Manage Subjects</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quizzes</h5>
+                    <p class="card-text">Create and schedule timed quizzes</p>
+                    <a href="{{ url_for('manage_quizzes') }}" class="btn btn-primary">Manage Quizzes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Users</h5>
+                    <p class="card-text">View and manage user accounts</p>
+                    <a href="{{ url_for('manage_users') }}" class="btn btn-primary">Manage Users</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
-

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning">
+            <div class="d-flex justify-content-between">
+                <h4>{{ quiz.remarks }}</h4>
+                <div id="timer" class="badge badge-danger p-2">Time Left: {{ quiz.duration }}:00</div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <form method="POST" id="quizForm">
+                {% for question in questions %}
+                <div class="question-card mb-4">
+                    <h5>Question {{ loop.index }}: {{ question.question_statement }}</h5>
+                    <div class="pl-3">
+                        {% for opt in [question.option1, question.option2, question.option3, question.option4] %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" 
+                                   name="question_{{ question.id }}" 
+                                   value="{{ loop.index }}">
+                            <label class="form-check-label">{{ opt }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-success btn-lg">Submit Answers</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Countdown Timer
+let seconds = {{ quiz.duration * 60 }};
+const timerElement = document.getElementById('timer');
+
+const updateTimer = () => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    timerElement.textContent = `Time Left: ${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    
+    if (--seconds <= 0) {
+        document.getElementById('quizForm').submit();
+        clearInterval(timerInterval);
+    }
+}
+
+const timerInterval = setInterval(updateTimer, 1000);
+updateTimer(); // Initial call
+</script>
+{% endblock %}

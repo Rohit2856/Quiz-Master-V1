@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="jumbotron text-center mt-5">
+    <h1 class="display-4">Welcome to Quiz Master</h1>
+    <p class="lead">Test your knowledge across various subjects!</p>
+    <hr class="my-4">
+    
+    {% if current_user.is_authenticated %}
+        <a class="btn btn-primary btn-lg" 
+           href="{{ url_for('user_dashboard') }}" 
+           role="button">
+            Go to Dashboard
+        </a>
+    {% else %}
+        <div class="d-grid gap-2 d-md-block">
+            <a class="btn btn-primary btn-lg me-md-2" 
+               href="{{ url_for('user_login') }}" 
+               role="button">
+                Student Login
+            </a>
+            <a class="btn btn-success btn-lg" 
+               href="{{ url_for('register') }}" 
+               role="button">
+                Register Now
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Diverse Subjects</h5>
+                <p class="card-text">Explore quizzes from various academic disciplines</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Instant Feedback</h5>
+                <p class="card-text">Get immediate results and detailed explanations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Track Progress</h5>
+                <p class="card-text">Monitor your performance over time</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

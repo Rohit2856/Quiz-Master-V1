@@ -55,7 +55,7 @@ def register():
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('user_login'))
 
-    return render_template('register.html')
+    return render_template('auth/register.html')
 
 @app.route('/user_login', methods=['GET', 'POST'])
 def user_login():
@@ -72,7 +72,7 @@ def user_login():
         login_user(user)
         return redirect(url_for('user_dashboard'))
 
-    return render_template('user_login.html')
+    return render_template('auth/user_login.html')
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
@@ -89,7 +89,7 @@ def admin_login():
         login_user(admin)
         return redirect(url_for('admin_dashboard'))
 
-    return render_template('admin_login.html')
+    return render_template('auth/admin_login.html')
 
 @app.route('/logout')
 @login_required
@@ -280,11 +280,11 @@ def start_quiz(quiz_id):
 
     # Store end time in session for client-side validation
     session['quiz_end'] = quiz.end_time.timestamp()
-    return render_template('user/quiz.html', quiz=quiz, questions=questions)
+    return render_template('user/quiz_attempt.html', quiz=quiz, questions=questions)
 
-# -------------
+# -------------------------
 # API Endpoints
-# -------------
+# -------------------------
 @app.route('/api/subjects', methods=['GET'])
 def api_subjects():
     subjects = Subject.query.all()
@@ -376,13 +376,13 @@ def edit_profile():
         flash('Profile updated successfully', 'success')
         return redirect(url_for('view_profile', username=current_user.username))
 
-    return render_template('profile/edit.html')
+    return render_template('user/profile_edit.html')
 
-@app.route('/profile/<username>') # View user profile
+@app.route('/profile/<username>')
 @login_required
 def view_profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('profile/view.html', 
+    return render_template('user/profile.html', 
                          user=user,
                          is_own_profile=(user.id == current_user.id))
 
@@ -390,20 +390,23 @@ def view_profile(username):
 # Helper Functions
 # -------------------------
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-# Check if the uploaded file is an image
+
 def allowed_file(filename):
     # Check if the file extension is in the allowed set
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.errorhandler(404) 
-def not_found(error):  
-    return jsonify({"error": "Resource not found"}), 404
+# -------------------------
+# Error Handlers
+# -------------------------
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('errors/404.html'), 404
 
-@app.errorhandler(403) 
-def forbidden(error): 
-    return jsonify({"error": "Forbidden"}), 403
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template('errors/403.html'), 403
 
 @app.errorhandler(500)
 def internal_error(error):
-    return jsonify({"error": "Internal server error"}), 500
+    return render_template('errors/500.html'), 500

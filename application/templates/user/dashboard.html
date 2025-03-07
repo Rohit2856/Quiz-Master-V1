@@ -1,29 +1,37 @@
 {% extends "base.html" %}
-
-{% block title %}User Dashboard{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h2>Available Quizzes</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Quiz</th>
-                <th>Chapter</th>
-                <th>Subject</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for quiz in quizzes %}
-            <tr>
-                <td>Quiz {{ quiz.id }}</td>
-                <td>{{ quiz.chapter.name }}</td>
-                <td>{{ quiz.chapter.subject.name }}</td>
-                <td><a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Start</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container mt-4">
+    <h2>Welcome, {{ current_user.full_name }}</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            Available Quizzes
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for quiz in quizzes %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ quiz.chapter.subject.name }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ quiz.chapter.name }}</h6>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Available until: {{ quiz.end_time.strftime('%Y-%m-%d %H:%M') }}
+                                </small>
+                            </p>
+                            {% if quiz.is_active() %}
+                                <a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" 
+                                   class="btn btn-primary">Start Quiz</a>
+                            {% else %}
+                                <button class="btn btn-secondary" disabled>Unavailable</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

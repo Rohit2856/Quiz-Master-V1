@@ -1,0 +1,31 @@
+<div class="timer-container alert alert-warning">
+    <span class="me-2">⏳ Time Remaining:</span>
+    <span id="countdown">{{ initial_time|default('00:00', true) }}</span>
+</div>
+
+<script>
+// Universal timer logic
+function startTimer(seconds) {
+    const timerElement = document.getElementById('countdown');
+    let remaining = seconds;
+    
+    const interval = setInterval(() => {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        timerElement.textContent = 
+            `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        if (--remaining < 0) {
+            clearInterval(interval);
+            if(document.getElementById('quizForm')) {
+                document.getElementById('quizForm').submit();
+            }
+        }
+    }, 1000);
+}
+
+// Initialize with server-provided time
+{% if quiz %}
+startTimer({{ quiz.duration * 60 }});
+{% endif %}
+</script>

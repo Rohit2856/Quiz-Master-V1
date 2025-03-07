@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card">
+    <!-- Profile Header -->
+    <div class="card-header bg-primary text-white">
+      <h3>{{ user.username }}</h3>
+    </div>
+
+    <!-- Profile Body -->
+    <div class="card-body">
+      <div class="row">
+        <!-- Left Column (Avatar + Basic Info) -->
+        <div class="col-md-4">
+          <img src="{{ user.avatar_url }}" class="img-thumbnail mb-3">
+          <div class="list-group">
+            <div class="list-group-item">Email: {{ user.email }}</div>
+            <div class="list-group-item">Joined: {{ user.created_at|datetime }}</div>
+          </div>
+        </div>
+
+        <!-- Right Column (Performance Summary) -->
+        <div class="col-md-8">
+          <h4>Recent Performance</h4>
+          <table class="table">
+            <thead>
+              <tr><th>Quiz</th><th>Score</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+              {% for score in user.scores[:3] %} <!-- Show last 3 attempts -->
+              <tr>
+                <td>{{ score.quiz.name }}</td>
+                <td>{{ score.total_scored }}/{{ score.quiz.questions|length }}</td>
+                <td>{{ score.time_stamp_of_attempt|datetime }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <a href="{{ url_for('full_performance') }}" class="btn btn-secondary">
+            View Full History
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

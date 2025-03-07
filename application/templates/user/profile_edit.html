@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Edit Your Profile</h3>
+        </div>
+        
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" novalidate>
+                {{ form.hidden_tag() }}
+
+                <!-- Avatar Section -->
+                <div class="row mb-4">
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <img src="{{ url_for('static', filename='avatars/' + current_user.avatar) if current_user.avatar 
+                                      else url_for('static', filename='avatars/default.png') }}" 
+                                 class="img-thumbnail rounded-circle" 
+                                 id="avatarPreview"
+                                 style="width: 200px; height: 200px; object-fit: cover">
+                        </div>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" 
+                                   id="avatar" name="avatar" 
+                                   accept="image/*">
+                            <label class="custom-file-label" for="avatar">
+                                Choose new avatar
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Profile Fields -->
+                    <div class="col-md-8">
+                        <!-- Username -->
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                                   id="username" name="username"
+                                   value="{{ form.username.data or current_user.username }}">
+                            {% for error in form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                                   id="email" name="email"
+                                   value="{{ form.email.data or current_user.email }}">
+                            {% for error in form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="form-group">
+                            <label for="bio">Biography</label>
+                            <textarea class="form-control {% if form.bio.errors %}is-invalid{% endif %}" 
+                                      id="bio" name="bio" rows="3">{{ form.bio.data or current_user.bio }}</textarea>
+                            {% for error in form.bio.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <!-- Location -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="location">Location</label>
+                                    <input type="text" class="form-control" 
+                                           id="location" name="location"
+                                           value="{{ form.location.data or current_user.location }}">
+                                </div>
+                            </div>
+
+                            <!-- Website -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="website">Website</label>
+                                    <input type="url" class="form-control" 
+                                           id="website" name="website"
+                                           value="{{ form.website.data or current_user.website }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                    <a href="{{ url_for('view_profile', username=current_user.username) }}" 
+                       class="btn btn-outline-secondary btn-lg ms-2">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Real-time Avatar Preview -->
+<script>
+document.getElementById('avatar').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('avatarPreview');
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        preview.src = e.target.result;
+    }
+    
+    if (file) {
+        reader.readAsDataURL(file);
+        document.querySelector('.custom-file-label').textContent = file.name;
+    }
+});
+</script>
+{% endblock %}
