@@ -397,6 +397,48 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # -------------------------
+# Data Visualization Routes
+# -------------------------
+@app.route('/stats/quiz_analytics')
+@admin_required
+def quiz_analytics():
+    """Generate data for admin quiz statistics"""
+    quizzes = Quiz.query.all()
+    data = {
+        'labels': [q.remarks for q in quizzes],
+        'attempts': [len(q.scores) for q in quizzes],
+        'average_scores': [round(sum(s.total_scored for s in q.scores)/len(q.scores), 1) 
+                          if q.scores else 0 for q in quizzes]
+    }
+    return jsonify(data)
+
+@app.route('/stats/question_stats/<int:quiz_id>')
+@admin_required
+def question_stats(quiz_id):
+    """Generate question-level statistics for a quiz"""
+    quiz = Quiz.query.get_or_404(quiz_id)
+    return jsonify([
+        {
+            'question_id': q.id,
+            'correct_percentage': round(
+                (sum(1 for s in quiz.scores if s.total_scored == q.correct_option)/len(quiz.scores))*100, 1
+            ) if quiz.scores else 0
+        } for q in quiz.questions
+    ])
+
+@app.route('/user/performance')
+@login_required
+def user_performance():
+    """Generate user's historical performance data"""
+    scores = Score.query.filter_by(user_id=current_user.id).order_by(Score.time_stamp_of_attempt).all()
+    return jsonify({
+        'labels': [s.quiz.remarks for s in scores],
+        'scores': [s.total_scored for s in scores],
+        'timestamps': [s.time_stamp_of_attempt.isoformat() for s in scores]
+    })
+
+
+# -------------------------
 # Error Handlers
 # -------------------------
 @app.errorhandler(404)
@@ -409,4 +451,11 @@ def forbidden(error):
 
 @app.errorhandler(500)
 def internal_error(error):
+    return render_template('errors/500.html'), 500
+
+@app.errorhandler(500)
+def internal_error(error):
+    # For chart data endpoints
+    if request.path.startswith('/stats'):
+        return jsonify({"error": "Failed to load chart data"}), 500
     return render_template('errors/500.html'), 500

@@ -2,7 +2,7 @@ from flask_login import UserMixin
 from application.extensions import db
 from datetime import datetime, timezone, timedelta
 
-# User Model (correct)
+# User Model 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -11,6 +11,8 @@ class User(UserMixin, db.Model):
     full_name = db.Column(db.String(100), nullable=False)
     qualification = db.Column(db.String(100))
     dob = db.Column(db.Date)
+    total_attempts = db.Column(db.Integer, default=0)
+    average_score = db.Column(db.Float, default=0.0)
     is_admin = db.Column(db.Boolean, default=False)
     avatar = db.Column(db.String(200))
     bio = db.Column(db.Text)
@@ -56,6 +58,8 @@ class Quiz(db.Model):
     duration = db.Column(db.Integer, nullable=False)  # In minutes
     active = db.Column(db.Boolean, default=True)
     remarks = db.Column(db.Text)
+    total_attempts = db.Column(db.Integer, default=0)
+    average_score = db.Column(db.Float, default=0.0)
 
     @property
     def end_time(self):
