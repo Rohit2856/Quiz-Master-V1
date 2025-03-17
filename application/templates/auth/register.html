@@ -1,59 +1,158 @@
 {% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h4>User Registration</h4>
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">User Registration</h4>
                 </div>
                 <div class="card-body">
+
+                    <!-- Flash Messages (Bootstrap 5) -->
+                    {% with messages = get_flashed_messages(with_categories=True) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Registration Form -->
                     <form method="POST" enctype="multipart/form-data">
                         {{ form.hidden_tag() }}
-                        <div class="row">
+                        
+                        <div class="row g-3">
+                            <!-- Left Column -->
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="username">Username</label>
-                                    <input type="text" class="form-control" 
-                                           name="username" required>
+                                <!-- Username -->
+                                <div class="mb-3">
+                                    {{ form.username.label(class="form-label") }}
+                                    {{ form.username(class="form-control") }}
+                                    {% if form.username.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.username.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div class="form-group">
-                                    <label for="password">Password</label>
-                                    <input type="password" class="form-control" 
-                                           name="password" required>
+
+                                <!-- Email -->
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control", placeholder="Enter your email") }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.email.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div class="form-group">
-                                    <label for="full_name">Full Name</label>
-                                    <input type="text" class="form-control" 
-                                           name="full_name" required>
+
+                                <!-- Password -->
+                                <div class="mb-3">
+                                    {{ form.password.label(class="form-label") }}
+                                    {{ form.password(class="form-control") }}
+                                    {% if form.password.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.password.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="mb-3">
+                                    {{ form.confirm.label(class="form-label") }}
+                                    {{ form.confirm(class="form-control") }}
+                                    {% if form.confirm.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.confirm.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
+
+                            <!-- Right Column -->
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="qualification">Qualification</label>
-                                    <input type="text" class="form-control" 
-                                           name="qualification">
+                                <!-- Full Name -->
+                                <div class="mb-3">
+                                    {{ form.full_name.label(class="form-label") }}
+                                    {{ form.full_name(class="form-control") }}
+                                    {% if form.full_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.full_name.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div class="form-group">
-                                    <label for="dob">Date of Birth</label>
-                                    <input type="date" class="form-control" 
-                                           name="dob">
+
+                                <!-- Date of Birth -->
+                                <div class="mb-3">
+                                    {{ form.dob.label(class="form-label") }}
+                                    {{ form.dob(class="form-control") }}
+                                    {% if form.dob.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.dob.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div class="form-group">
-                                    <label for="avatar">Profile Picture</label>
-                                    <input type="file" class="form-control-file" 
-                                           name="avatar" accept="image/*">
+
+                                <!-- Qualification -->
+                                <div class="mb-3">
+                                    {{ form.qualification.label(class="form-label") }}
+                                    {{ form.qualification(class="form-control") }}
+                                    {% if form.qualification.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.qualification.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Full Width Fields -->
+                            <div class="col-12">
+                                <!-- Profile Picture -->
+                                <div class="mb-3">
+                                    {{ form.avatar.label(class="form-label") }}
+                                    {{ form.avatar(class="form-control") }}
+                                    <small class="form-text text-muted">
+                                        Allowed formats: JPG, PNG, GIF (Max 2MB)
+                                    </small>
+                                    {% if form.avatar.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.avatar.errors %}
+                                                <small>{{ error }}</small><br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success">
+                                        Register
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-success btn-block">Register</button>
                     </form>
-                    <div class="mt-3 text-center">
-                        <small>
-                            Already have an account? 
-                            <a href="{{ url_for('user_login') }}">Login here</a>
-                        </small>
-                    </div>
+
                 </div>
             </div>
         </div>

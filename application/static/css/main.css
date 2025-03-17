@@ -1,0 +1,58 @@
+/* Custom Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Quiz styles */
+.question-card {
+    background-color: #fff;
+    border-left: 4px solid #007bff;
+    margin-bottom: 1.5rem;
+}
+
+/* Custom button styles */
+.btn {
+    border-radius: 0.3rem;
+}
+
+/* Custom form styles */
+.form-control, .form-select {
+    border-radius: 0.3rem;
+}
+
+/* Timer highlighting */
+#timer {
+    font-size: 1.25rem;
+    font-weight: bold;
+    transition: all 0.5s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fadeIn {
+    animation: fadeIn 0.5s ease-in;
+}

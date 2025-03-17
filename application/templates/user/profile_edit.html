@@ -16,11 +16,10 @@
                 <div class="row mb-4">
                     <div class="col-md-4 text-center">
                         <div class="mb-3">
-                            <img src="{{ url_for('static', filename='avatars/' + current_user.avatar) if current_user.avatar 
-                                      else url_for('static', filename='avatars/default.png') }}" 
-                                 class="img-thumbnail rounded-circle" 
-                                 id="avatarPreview"
-                                 style="width: 200px; height: 200px; object-fit: cover">
+                            <img src="{{ url_for('profile.serve_uploaded_file', filename=current_user.avatar) }}"
+     class="img-fluid rounded-circle mb-3"
+     style="width: 200px; height: 200px; object-fit: cover;">
+
                         </div>
                         <div class="custom-file">
                             <input type="file" class="custom-file-input" 
@@ -95,7 +94,7 @@
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-save me-2"></i>Save Changes
                     </button>
-                    <a href="{{ url_for('view_profile', username=current_user.username) }}" 
+                    <a href="{{ url_for('profile.view', username=current_user.username) }}" 
                        class="btn btn-outline-secondary btn-lg ms-2">
                         Cancel
                     </a>

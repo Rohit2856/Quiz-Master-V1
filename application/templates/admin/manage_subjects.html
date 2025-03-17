@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Manage Subjects{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Subjects Management</h2>
+        <button class="btn btn-success" data-bs-toggle="modal" 
+                data-bs-target="#addSubjectModal">
+            <i class="bi bi-plus-lg"></i> New Subject
+        </button>
+    </div>
+
+    <div class="modal fade" id="addSubjectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Subject</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('admin.manage_subjects') }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Subject Name</label>
+                            <input type="text" name="subject_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="subject_desc" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" 
+                                data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Subject</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject in subjects %}
+                        <tr>
+                            <td>{{ subject.id }}</td>
+                            <td>{{ subject.name }}</td>
+                            <td>{{ subject.description|default('No description', true) }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.manage_chapters', subject_id=subject.id) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-journal-bookmark"></i> Chapters
+                                </a>
+                                <form class="d-inline" 
+                                      action="{{ url_for('admin.delete_subject', subject_id=subject.id) }}" 
+                                      method="POST">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

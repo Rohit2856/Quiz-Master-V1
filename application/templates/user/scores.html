@@ -1,36 +1,42 @@
 {% extends "base.html" %}
+{% block title %}Your Scores{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <div class="card">
-        <div class="card-header">
-            <h3>Your Quiz History</h3>
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4>Quiz Attempt History</h4>
         </div>
         <div class="card-body">
-            <table class="table table-hover">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Date</th>
-                        <th>Subject</th>
-                        <th>Chapter</th>
-                        <th>Score</th>
-                        <th>Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for score in scores %}
-                    <tr>
-                        <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ score.quiz.chapter.subject.name }}</td>
-                        <td>{{ score.quiz.chapter.name }}</td>
-                        <td>{{ score.total_scored }}/{{ score.quiz.questions|length }}</td>
-                        <td>
-                            <a href="{{ url_for('quiz_results', score_id=score.id) }}" 
-                               class="btn btn-sm btn-info">View Details</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Quiz</th>
+                            <th>Subject</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for score in scores %}
+                        <tr>
+                            <td>{{ score.quiz.remarks }}</td>
+                            <td>{{ score.quiz.chapter.subject.name }}</td>
+                            <td>{{ score.total_scored }}</td>
+                            <td>{{ score.time_stamp_of_attempt.strftime('%d %b %Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('quiz.results', quiz_id=score.quiz.id) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

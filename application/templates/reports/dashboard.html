@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Reports Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4><i class="bi bi-graph-up"></i> Reports Dashboard</h4>
+        </div>
+        <div class="card-body">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-person"></i> User Progress</h5>
+                            <p class="card-text">View individual student performance and progress over time.</p>
+                            <a href="{{ url_for('reports.user_progress_report') }}" class="btn btn-primary">View Report</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-question-circle"></i> Question Analytics</h5>
+                            <p class="card-text">Analyze question difficulty and performance metrics.</p>
+                            <a href="{{ url_for('reports.question_analytics') }}" class="btn btn-primary">View Report</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-clock-history"></i> Quiz History</h5>
+                            <p class="card-text">View comprehensive quiz results and statistics.</p>
+                            <a href="{{ url_for('reports.real_time_analytics') }}" class="btn btn-primary">View Report</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

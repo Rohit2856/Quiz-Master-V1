@@ -1,136 +1,69 @@
 {% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <h2>Admin Control Panel</h2>
-    <div class="row">
-        <!-- Admin Cards -->
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Subjects</h5>
-                    <p class="card-text">Manage quiz subjects and categories</p>
-                    <a href="{{ url_for('manage_subjects') }}" class="btn btn-primary">Manage Subjects</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Quizzes</h5>
-                    <p class="card-text">Create and schedule timed quizzes</p>
-                    <a href="{{ url_for('manage_quizzes') }}" class="btn btn-primary">Manage Quizzes</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
                 <div class="card-body">
                     <h5 class="card-title">Users</h5>
-                    <p class="card-text">View and manage user accounts</p>
-                    <a href="{{ url_for('manage_users') }}" class="btn btn-primary">Manage Users</a>
+                    <h2>{{ stats.users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Subjects</h5>
+                    <h2>{{ stats.subjects }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Quizzes</h5>
+                    <h2>{{ stats.quizzes }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Questions</h5>
+                    <h2>{{ stats.questions }}</h2>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="chart-container mb-4">
-        <canvas id="quizAnalyticsChart"></canvas>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-container">
-                <canvas id="questionStatsChart"></canvas>
-            </div>
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h4>Quick Actions</h4>
         </div>
-        <div class="col-md-6">
-            <div class="chart-container">
-                <canvas id="userPerformanceChart"></canvas>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{{ url_for('admin.manage_subjects') }}" 
+                       class="btn btn-outline-primary w-100">
+                        <i class="bi bi-book"></i> Manage Subjects
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('admin.manage_users') }}" 
+                       class="btn btn-outline-success w-100">
+                        <i class="bi bi-people"></i> Manage Users
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('admin.admin_search') }}" 
+                       class="btn btn-outline-info w-100">
+                        <i class="bi bi-search"></i> System Search
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-// Initialize charts with empty data
-const quizCtx = document.getElementById('quizAnalyticsChart').getContext('2d');
-const quizAnalyticsChart = new Chart(quizCtx, {
-    type: 'bar',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Attempts',
-            data: [],
-            backgroundColor: 'rgba(54, 162, 235, 0.5)'
-        },{
-            label: 'Avg Score',
-            data: [],
-            type: 'line',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            tension: 0.1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
-
-const userCtx = document.getElementById('userPerformanceChart').getContext('2d');
-const userPerformanceChart = new Chart(userCtx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'User Scores',
-            data: [],
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0.1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
-
-// Fetch and update chart data
-async function loadCharts() {
-    try {
-        const [quizRes, userRes] = await Promise.all([
-            fetch('/stats/quiz_analytics'),
-            fetch('/stats/user_performance')
-        ]);
-        
-        const quizData = await quizRes.json();
-        const userData = await userRes.json();
-
-        // Update quiz analytics chart
-        quizAnalyticsChart.data.labels = quizData.labels;
-        quizAnalyticsChart.data.datasets[0].data = quizData.attempts;
-        quizAnalyticsChart.data.datasets[1].data = quizData.average_scores;
-        quizAnalyticsChart.update();
-
-        // Update user performance chart
-        userPerformanceChart.data.labels = userData.labels;
-        userPerformanceChart.data.datasets[0].data = userData.scores;
-        userPerformanceChart.update();
-
-    } catch (error) {
-        console.error('Error loading chart data:', error);
-    }
-}
-
-// Load charts when page is ready
-document.addEventListener('DOMContentLoaded', loadCharts);
-</script>
 {% endblock %}

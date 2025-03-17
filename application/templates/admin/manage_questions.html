@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Manage Questions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Questions for {{ quiz.remarks }}</h2>
+        <div>
+            <a href="{{ url_for('admin.manage_quizzes', chapter_id=quiz.chapter_id) }}" 
+               class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Quizzes
+            </a>
+            <button class="btn btn-success" data-bs-toggle="modal" 
+                    data-bs-target="#addQuestionModal">
+                <i class="bi bi-plus-lg"></i> New Question
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addQuestionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('admin.manage_questions') }}">
+                    <div class="modal-body">
+                        <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                        <div class="mb-3">
+                            <label class="form-label">Question</label>
+                            <textarea name="question" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option 1</label>
+                            <input type="text" name="option1" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option 2</label>
+                            <input type="text" name="option2" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option 3</label>
+                            <input type="text" name="option3" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option 4</label>
+                            <input type="text" name="option4" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correct Option</label>
+                            <select name="correct_option" class="form-select" required>
+                                <option value="1">Option 1</option>
+                                <option value="2">Option 2</option>
+                                <option value="3">Option 3</option>
+                                <option value="4">Option 4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" 
+                                data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Question</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Question</th>
+                            <th>Options</th>
+                            <th>Correct</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in questions %}
+                        <tr>
+                            <td>{{ question.id }}</td>
+                            <td>{{ question.question_statement }}</td>
+                            <td>
+                                <ol>
+                                    <li>{{ question.option1 }}</li>
+                                    <li>{{ question.option2 }}</li>
+                                    <li>{{ question.option3 }}</li>
+                                    <li>{{ question.option4 }}</li>
+                                </ol>
+                            </td>
+                            <td>Option {{ question.correct_option }}</td>
+                            <td>
+                                <form class="d-inline" 
+                                      action="{{ url_for('admin.delete_question', question_id=question.id) }}" 
+                                      method="POST">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

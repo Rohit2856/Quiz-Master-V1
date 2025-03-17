@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Manage Chapters{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Chapters for {{ subject.name }}</h2>
+        <div>
+            <a href="{{ url_for('admin.manage_subjects') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Subjects
+            </a>
+            <button class="btn btn-success" data-bs-toggle="modal" 
+                    data-bs-target="#addChapterModal">
+                <i class="bi bi-plus-lg"></i> New Chapter
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addChapterModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Chapter</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('admin.manage_chapters') }}">
+                    <div class="modal-body">
+                        <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                        <div class="mb-3">
+                            <label class="form-label">Chapter Name</label>
+                            <input type="text" name="chapter_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="chapter_desc" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" 
+                                data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Chapter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Chapter Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chapter in chapters %}
+                        <tr>
+                            <td>{{ chapter.id }}</td>
+                            <td>{{ chapter.name }}</td>
+                            <td>{{ chapter.description|default('No description', true) }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.manage_quizzes', chapter_id=chapter.id) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-question-square"></i> Quizzes
+                                </a>
+                                <form class="d-inline" 
+                                      action="{{ url_for('admin.delete_chapter', chapter_id=chapter.id) }}" 
+                                      method="POST">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
