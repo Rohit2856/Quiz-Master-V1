@@ -1,2 +1,2 @@
 FLASK_APP=wsgi.py
-FLASK_DEBUG=1
+FLASK_ENV=development

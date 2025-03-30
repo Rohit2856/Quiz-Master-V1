@@ -1,35 +1,33 @@
 {% extends "base.html" %}
-
-{% block title %}Admin Login{% endblock %}
-
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div class="card shadow">
                 <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0">Admin Login</h4>
+                    <h4>Admin Login</h4>
                 </div>
                 <div class="card-body">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% for category, message in messages %}
-                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
                         {% endfor %}
                     {% endwith %}
-                    
-                    <form method="POST" action="{{ url_for('auth.admin_login') }}">
+                    <form method="POST">
                         {{ form.hidden_tag() }}
                         <div class="mb-3">
                             {{ form.username.label(class="form-label") }}
-                            {{ form.username(class="form-control", placeholder="Enter your username") }}
+                            {{ form.username(class="form-control") }}
                         </div>
                         <div class="mb-3">
                             {{ form.password.label(class="form-label") }}
-                            {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            {{ form.password(class="form-control") }}
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-danger">Login</button>
+                        <div class="mb-3 form-check">
+                            {{ form.remember(class="form-check-input") }}
+                            {{ form.remember.label(class="form-check-label") }}
                         </div>
+                        <button type="submit" class="btn btn-danger w-100">{{ form.submit.label }}</button>
                     </form>
                 </div>
             </div>

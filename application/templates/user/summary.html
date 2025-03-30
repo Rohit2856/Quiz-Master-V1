@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Summary</h2>
+    
+    <div class="card mb-5">
+        <div class="card-header">
+            <h4>Subject-wise Performance</h4>
+        </div>
+        <div class="card-body text-center">
+            <canvas id="subjectChart" style="width: 100%; max-height: 400px; margin: auto;"></canvas>
+            
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Max Score</th>
+                            <th>Quiz Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject, details in subject_max_scores.items() %}
+                        <tr>
+                            <td>{{ subject }}</td>
+                            <td>{{ details.max_score }}</td>
+                            <td>{{ details.quiz_name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-5">
+        <div class="card-header">
+            <h4>Quiz Scores Over Time</h4>
+        </div>
+        <div class="card-body text-center">
+            <canvas id="quizChart" style="width: 100%; max-height: 300px; margin: auto;"></canvas>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Go Back
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Subject-wise Performance Chart (Pie Chart)
+    const subjectLabels = {{ subject_labels|tojson }};
+    const subjectData = {{ subject_avg_scores|tojson }};
+    
+    const ctxSubject = document.getElementById('subjectChart').getContext('2d');
+    const subjectChart = new Chart(ctxSubject, {
+        type: 'pie',
+        data: {
+            labels: subjectLabels,
+            datasets: [{
+                label: 'Average Score',
+                data: subjectData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+    
+    // Quiz Scores Chart (Line Chart)
+    const quizLabels = {{ quiz_labels|tojson }};
+    const quizScores = {{ quiz_scores|tojson }};
+    
+    const ctxQuiz = document.getElementById('quizChart').getContext('2d');
+    const quizChart = new Chart(ctxQuiz, {
+        type: 'line',
+        data: {
+            labels: quizLabels,
+            datasets: [{
+                label: 'Quiz Score',
+                data: quizScores,
+                fill: false,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+

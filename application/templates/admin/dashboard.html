@@ -4,40 +4,56 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row mb-4">
+        <!-- Users Box -->
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Users</h5>
-                    <h2>{{ stats.users }}</h2>
+            <a href="{{ url_for('admin.manage_users') }}" class="text-decoration-none">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Users</h5>
+                        <h2>{{ stats.users }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
+
+        <!-- Subjects Box -->
         <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Subjects</h5>
-                    <h2>{{ stats.subjects }}</h2>
+            <a href="{{ url_for('admin.manage_subjects') }}" class="text-decoration-none">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Subjects</h5>
+                        <h2>{{ stats.subjects }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
+
+        <!-- Quizzes Box -->
         <div class="col-md-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body">
-                    <h5 class="card-title">Quizzes</h5>
-                    <h2>{{ stats.quizzes }}</h2>
+            <a href="#" class="text-decoration-none">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Quizzes</h5>
+                        <h2>{{ stats.quizzes }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
+
+        <!-- Questions Box -->
         <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Questions</h5>
-                    <h2>{{ stats.questions }}</h2>
+            <a href="#" class="text-decoration-none">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Question</h5>
+                        <h2>{{ stats.questions }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
+    <!-- Quick Actions Card -->
     <div class="card shadow">
         <div class="card-header bg-dark text-white">
             <h4>Quick Actions</h4>
@@ -57,9 +73,9 @@
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="{{ url_for('admin.admin_search') }}" 
+                    <a href="{{ url_for('admin.view_all_attempts') }}" 
                        class="btn btn-outline-info w-100">
-                        <i class="bi bi-search"></i> System Search
+                       <i class="bi bi-search"></i> View All Quiz Attempts
                     </a>
                 </div>
             </div>
@@ -67,3 +83,4 @@
     </div>
 </div>
 {% endblock %}
+

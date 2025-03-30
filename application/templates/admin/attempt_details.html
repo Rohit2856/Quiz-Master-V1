@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Attempt Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Attempt Details</h2>
+    <table class="table table-bordered">
+        <tr>
+            <th>User:</th>
+            <td>{{ score.user.username }}</td>
+        </tr>
+        <tr>
+            <th>Quiz:</th>
+            <td>{{ quiz.quiz_name }}</td>
+        </tr>
+        <tr>
+            <th>Chapter:</th>
+            <td>{{ quiz.chapter.name }}</td>
+        </tr>
+        <tr>
+            <th>Subject</th>
+            <td>{{ quiz.chapter.subject.name }}</td>
+        </tr>
+        <tr>
+            <th>Score:</th>
+            <td>{{ score.total_scored }}/{{ quiz.questions|length }}</td>
+        </tr>
+        <tr>
+            <th>Date & Time:</th>
+            <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+    </table>
+
+    <h3>Question Breakdown</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Chosen Answer</th>
+                <th>Correct Answer</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for question in quiz.questions %}
+            {% set chosen = user_answers.get(question.id) %}
+            <tr>
+                <!-- Show the question statement -->
+                <td>{{ question.question_statement }}</td>
+
+                <!-- Show which option the user chose -->
+                <td>
+                    {% if chosen %}
+                        {% set chosen_int = chosen|int %}
+                        {% set chosen_text = question|get_attribute('option' ~ chosen_int|string) %}
+                        {{ chosen_text if chosen_text else 'Not answered' }}
+                    {% else %}
+                        Not answered
+                    {% endif %}
+                </td>
+
+                <!-- Show the correct option text -->
+                <td>
+                    {% set correct_text = question|get_attribute('option' ~ question.correct_option|string) %}
+                    {{ correct_text }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('admin.view_all_attempts') }}" class="btn btn-secondary">Back to Attempts</a>
+</div>
+{% endblock %}
+

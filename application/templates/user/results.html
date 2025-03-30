@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Quiz Results - {{ quiz.quiz_name or 'No Title' }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h3>{{ quiz.quiz_name or 'Quiz Results' }}</h3>
+        </div>
+        <div class="card-body">
+            <p class="fs-4">
+                Your Score: <strong>{{ score.total_scored }}</strong> out of <strong>{{ quiz.questions|length }}</strong>
+            </p>
+            <p>
+                Attempt Date/Time: <strong>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</strong>
+            </p>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h4>Detailed Breakdown</h4>
+        </div>
+        <div class="card-body">
+            {% for question in quiz.questions %}
+                <!-- Retrieve the user's chosen option for this question -->
+                {% set chosen = user_answers.get(question.id) %}
+                <div class="mb-3 p-3 border rounded bg-light">
+                    <h5>Q{{ loop.index }}. {{ question.question_statement }}</h5>
+                    <div class="ms-3">
+                        {% for i in range(1, 5) %}
+                            {% set opt = question|get_attribute('option' ~ i|string) %}
+                            {% if opt %}
+                                <div class="mb-1">
+                                    {% if chosen == i and i == question.correct_option %}
+                                        <!-- User chose the correct option -->
+                                        <span class="text-success fw-bold">
+                                            {{ opt }} (Your Choice, Correct)
+                                        </span>
+                                    {% elif i == question.correct_option %}
+                                        <!-- This option is correct, but not chosen -->
+                                        <span class="text-success fw-bold">
+                                            {{ opt }} (Correct)
+                                        </span>
+                                    {% elif chosen == i %}
+                                        <!-- User chose this option, but it's incorrect -->
+                                        <span class="text-danger">
+                                            {{ opt }} (Your Choice)
+                                        </span>
+                                    {% else %}
+                                        <!-- Just a normal option -->
+                                        <span>{{ opt }}</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('user.attempt_history') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-arrow-left"></i> Back to Attempt History
+        </a>
+    </div>
+</div>
+{% endblock %}

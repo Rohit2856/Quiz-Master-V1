@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}
+    {% if mode == "edit" %}Edit Quiz{% else %}New Quiz{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>
+        {% if mode == "edit" %}
+            Edit Quiz (ID: {{ quiz.id }})
+        {% else %}
+            Create New Quiz for {{ chapter.name }}
+        {% endif %}
+    </h2>
+    
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.chapter_id(type="hidden") }}
+        
+        <div class="mb-3">
+            <label for="quiz_name" class="form-label">Quiz Name</label>
+            {{ form.quiz_name(class="form-control", id="quiz_name", required=True) }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="start_time" class="form-label">Start Time</label>
+            {{ form.start_time(class="form-control", id="start_time", required=True) }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="duration" class="form-label">Duration (HH:MM)</label>
+            {{ form.duration(class="form-control", id="duration", required=True, pattern="[0-9]{1,2}:[0-9]{2}") }}
+            <small class="text-muted">Please enter duration in HH:MM format (e.g., 02:30 for 2h 30m).</small>
+        </div>
+        
+        <div class="mb-3">
+            <label for="remarks" class="form-label">Remarks</label>
+            {{ form.remarks(class="form-control", id="remarks") }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            {% if mode == "edit" %}Update{% else %}Create{% endif %} Quiz
+        </button>
+        <a href="{{ url_for('admin.manage_quizzes', chapter_id=chapter.id) }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

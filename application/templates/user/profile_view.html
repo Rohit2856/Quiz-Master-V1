@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Your Profile{% endblock %}
+{% block title %}User Profile{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -10,36 +10,47 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-4 text-center">
-                    <!-- Display user avatar with correct URL -->
-                    {% if current_user.avatar %}
-                        <img src="{{ url_for('profile.serve_uploaded_file', filename=current_user.avatar) }}"
+                    <!-- Display user avatar with correct URL using the passed-in user -->
+                    {% if user.avatar %}
+                        <img src="{{ url_for('profile.serve_uploaded_file', filename=user.avatar) }}"
+                             alt="avatar"
                              class="img-fluid rounded-circle mb-3"
                              style="width: 200px; height: 200px; object-fit: cover;">
                     {% else %}
                         <img src="{{ url_for('static', filename='images/default_avatar.png') }}"
+                             alt="avatar"
                              class="img-fluid rounded-circle mb-3"
                              style="width: 200px; height: 200px; object-fit: cover;">
                     {% endif %}
 
-                    <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-warning">
-                        Edit Profile
-                    </a>
+                    {% if is_own_profile %}
+                        <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-warning">
+                            Edit Profile
+                        </a>
+                    {% endif %}
                 </div>
                 <div class="col-md-8">
-                    <h3>{{ current_user.full_name }}</h3>
-                    <p class="text-muted">@{{ current_user.username }}</p>
+                    <h3>{{ user.full_name }}</h3>
+                    <p class="text-muted">@{{ user.username }}</p>
                     <hr>
-                    <p><strong>Email:</strong> {{ current_user.email }}</p>
-                    <p><strong>Biography:</strong> {{ current_user.bio or 'No bio available' }}</p>
-                    <p><strong>Location:</strong> {{ current_user.location or 'Not specified' }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Biography:</strong> {{ user.bio or 'No bio available' }}</p>
+                    <p><strong>Qualifications:</strong> {{ user.qualification or 'Not specified' }}</p>
+                    <p><strong>Location:</strong> {{ user.location or 'Not specified' }}</p>
                     <p><strong>Website:</strong> 
-                        {% if current_user.website %}
-                            <a href="{{ current_user.website }}" target="_blank">{{ current_user.website }}</a>
+                        {% if user.website %}
+                            <a href="{{ user.website }}" target="_blank">{{ user.website }}</a>
                         {% else %}
                             Not specified
                         {% endif %}
                     </p>
-                    <p><strong>Date of Birth:</strong> {{ current_user.dob or 'Not provided' }}</p>
+                    <p><strong>Date of Birth:</strong>
+                        {% if user.dob %}
+                            {{ user.dob.strftime('%d-%m-%Y') }}
+                        {% else %}
+                            Not provided
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </div>

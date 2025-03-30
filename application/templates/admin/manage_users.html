@@ -3,52 +3,83 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>User Management</h2>
-    </div>
-
-    <div class="card shadow">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in users %}
-                        <tr>
-                            <td>{{ user.id }}</td>
-                            <td>{{ user.username }}</td>
-                            <td>{{ user.full_name }}</td>
-                            <td>
-                                {% if user.is_admin %}
-                                <span class="badge bg-danger">Admin</span>
-                                {% else %}
-                                <span class="badge bg-primary">User</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <form class="d-inline" 
-                                      action="{{ url_for('admin.delete_user', user_id=user.id) }}" 
-                                      method="POST">
-                                    <button type="submit" class="btn btn-sm btn-danger" 
-                                            {% if user.id == current_user.id %}disabled{% endif %}>
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <h2>User Management</h2>
+    <div class="table-responsive mt-3">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Avatar</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>DOB</th>
+                    <th>Location</th>
+                    <th>Website</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>
+                        {% if user.avatar %}
+                            <img src="{{ url_for('profile.serve_uploaded_file', filename=user.avatar) }}"
+                                 alt="avatar"
+                                 class="rounded-circle"
+                                 style="width: 40px; height: 40px; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/default_avatar.png') }}"
+                                 alt="avatar"
+                                 class="rounded-circle"
+                                 style="width: 40px; height: 40px; object-fit: cover;">
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('profile.view', username=user.username) }}" class="text-decoration-none">
+                            {{ user.username }}
+                        </a>
+                    </td>
+                    <td>{{ user.full_name or 'N/A' }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.dob %}
+                            {{ user.dob.strftime('%d-%m-%Y') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ user.location or 'N/A' }}</td>
+                    <td>
+                        {% if user.website %}
+                            <a href="{{ user.website }}" target="_blank">{{ user.website }}</a>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_admin %}
+                            <span class="badge bg-danger">Admin</span>
+                        {% else %}
+                            <span class="badge bg-primary">User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('profile.view', username=user.username) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <form class="d-inline" action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            <button type="submit" class="btn btn-sm btn-danger" {% if user.id == current_user.id %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

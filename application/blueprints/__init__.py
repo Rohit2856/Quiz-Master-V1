@@ -6,7 +6,6 @@ from .api_bp import api_bp
 from .auth_bp import auth_bp
 from .admin_bp import admin_bp
 from .user_bp import user_bp
-from .reports_bp import reports_bp 
 
 # Listed for easier registration in application factory 
-all_blueprints = [api_bp, auth_bp, admin_bp, user_bp, main_bp, profile_bp, stats_bp, reports_bp]
+all_blueprints = [api_bp, auth_bp, admin_bp, user_bp, main_bp, profile_bp, stats_bp]

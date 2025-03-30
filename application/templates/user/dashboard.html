@@ -2,77 +2,93 @@
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
+<!-- Horizontal nav bar for user dashboard -->
+<div class="container-fluid" style="background-color: #ffbb00; border-bottom: 1px solid #ccc; margin-bottom: 1rem;">
+    <div class="container py-2">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link fw-bold" style="color: #1274f4;" href="{{ url_for('user.summary') }}">
+                    Summary
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-bold" style="color: #1274f4;" href="#availableQuizzes">
+                    Available Quizzes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-bold" style="color: #1274f4;" href="{{ url_for('user.attempt_history') }}">
+                    View Attempt History
+                </a>                
+            </li>
+        </ul>
+    </div>
+</div>
+
 <div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h4>Your Active Quizzes</h4>
+    <div class="performance-header mb-4">
+        <h2 class="mb-3">Your Learning Progress</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Quiz Attempts</h5>
+                        <p class="display-4">{{ total_attempts }}</p>
+                        <a href="{{ url_for('user.scores') }}" class="text-decoration-none">
+                            <small>View All Attempts</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            {% if active_quizzes %}
-            <div class="row row-cols-1 row-cols-md-2 g-4">
-                {% for quiz in active_quizzes %}
+    </div>
+
+    <div id="availableQuizzes" class="all-quizzes mb-4">
+        <h4 class="mb-3">Available Quizzes</h4>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% if all_quizzes %}
+                {% for quiz in all_quizzes %}
                 <div class="col">
                     <div class="card h-100">
                         <div class="card-header bg-success text-white">
-                            <h5>{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h5>
+                            <h5>{{quiz.quiz_name}} - {{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h5>
                         </div>
                         <div class="card-body">
                             <p class="card-text">
-                                <i class="bi bi-clock"></i> 
-                                {{ quiz.start_time.strftime('%Y-%m-%d %H:%M') }}<br>
-                                <i class="bi bi-stopwatch"></i> 
-                                Duration: {{ quiz.duration }} minutes
+                                <strong>Start:</strong>
+                                {% if quiz.start_time %}
+                                    {{ quiz.start_time.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                                <br>
+                                <strong>Duration:</strong> {{ quiz.duration }} minutes<br>
+                                <strong>Status:</strong> <strong>{{ quiz.status }}</strong><br>
+                                <strong>Remarks:</strong> {{ quiz.remarks or 'N/A' }}
                             </p>
                             <a href="{{ url_for('user.attempt_quiz', quiz_id=quiz.id) }}" 
                                class="btn btn-warning">
-                                <i class="bi bi-pencil"></i> Attempt Quiz
+                                Attempt Quiz
                             </a>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
-            </div>
             {% else %}
-            <div class="alert alert-info">
-                No active quizzes available. Check back later!
-            </div>
+                <div class="col">
+                    <div class="alert alert-info">
+                        No active or upcoming quizzes available. Please check back later.
+                    </div>
+                </div>
             {% endif %}
         </div>
     </div>
 
-    <div class="card shadow mt-4">
-        <div class="card-header bg-info text-white">
-            <h4>Quiz History</h4>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Quiz</th>
-                            <th>Score</th>
-                            <th>Attempt Date</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for score in past_scores %}
-                        <tr>
-                            <td>{{ score.quiz.remarks }}</td>
-                            <td>{{ score.total_scored }}/{{ score.quiz.questions|length }}</td>
-                            <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>
-                                <a href="{{ url_for('user.results', quiz_id=score.quiz.id) }}" 
-                                   class="btn btn-sm btn-primary">
-                                    <i class="bi bi-file-text"></i> View
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Refresh Dashboard
+        </a>
     </div>
 </div>
 {% endblock %}
+

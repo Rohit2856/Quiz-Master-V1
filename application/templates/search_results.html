@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <style>
+        .btn-dark-blue {
+            background-color: #003366; /* Dark blue background */
+            border: 1px solid #003366;
+            color: #ffffff; /* White text */
+            font-size: 1.1rem; /* Larger text */
+            padding: 0.75rem 1.5rem; /* Bigger button */
+            border-radius: 0.25rem;
+        }
+        .btn-dark-blue:hover {
+            background-color: #002244;
+            border-color: #002244;
+            color: #ffffff;
+        }
+        .badge.subject-badge {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.3rem 0.5rem;
+            margin-left: 0.5rem;
+            border-radius: 0.3rem;
+        }
+    </style>
+
+    <h2 class="mb-4">Search Results for "<span id="searchTerm">{{ search_term }}</span>"</h2>
+    
+    <div id="searchResults"></div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchTerm = document.getElementById('searchTerm').textContent.trim();
+    const resultsContainer = document.getElementById('searchResults');
+
+    // Fetch search results from the API endpoint
+    fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`)
+      .then(response => response.json())
+      .then(data => {
+          resultsContainer.innerHTML = ""; // Clear previous content
+
+          // Display Matched Users as Buttons
+          if (data.users && data.users.length) {
+              let usersSection = `<h4>Matched Users</h4>
+                  <div class="d-flex flex-wrap gap-3 mb-4">`;
+              data.users.forEach(user => {
+                  usersSection += `<a href="/profile/${user.username}" class="btn btn-dark-blue">
+                                        ${user.username}
+                                   </a>`;
+              });
+              usersSection += `</div>`;
+              resultsContainer.innerHTML += usersSection;
+          }
+          
+          // Display Matched Subjects as Buttons
+          if (data.subjects && data.subjects.length) {
+              let subjectsSection = `<h4>Matched Subjects</h4>
+                  <div class="d-flex flex-wrap gap-3 mb-4">`;
+              data.subjects.forEach(s => {
+                  subjectsSection += `<a href="/admin/subjects" class="btn btn-dark-blue">
+                                         ${s.name}
+                                      </a>`;
+              });
+              subjectsSection += `</div>`;
+              resultsContainer.innerHTML += subjectsSection;
+          }
+          
+          // Display Matched Quizzes as Buttons 
+          if (data.quizzes && data.quizzes.length) {
+              let quizzesSection = `<h4>Matched Quizzes</h4>
+                  <div class="d-flex flex-wrap gap-3 mb-4">`;
+              data.quizzes.forEach(q => {
+                  quizzesSection += `<a href="/user/quiz/${q.id}/attempt" class="btn btn-dark-blue">
+                                         ${q.quiz_name}
+                                         ${q.subject_name || q.chapter_name ? 
+                                           `<span class="badge subject-badge">${q.subject_name || q.chapter_name}</span>` : 
+                                           ''}
+                                     </a>`;
+              });
+              quizzesSection += `</div>`;
+              resultsContainer.innerHTML += quizzesSection;
+          }
+          
+          // Display Matched Questions as Buttons
+          if (data.questions && data.questions.length) {
+              let questionsSection = `<h4>Matched Questions</h4>
+                  <div class="d-flex flex-wrap gap-3 mb-4">`;
+              data.questions.forEach(ques => {
+                  questionsSection += `<a href="/admin/questions/${ques.quiz_id}?question_id=${ques.id}" class="btn btn-dark-blue">
+                                           ${ques.question_statement.substring(0,50)}...
+                                        </a>`;
+              });
+              questionsSection += `</div>`;
+              resultsContainer.innerHTML += questionsSection;
+          }
+          
+          // If no categories have results, show a "No results" message
+          if ((!data.users || !data.users.length) &&
+              (!data.subjects || !data.subjects.length) &&
+              (!data.quizzes || !data.quizzes.length) &&
+              (!data.questions || !data.questions.length)) {
+              resultsContainer.innerHTML = `<p class="text-muted">No results found for "${searchTerm}".</p>`;
+          }
+      })
+      .catch(err => {
+          console.error("Error fetching search results:", err);
+          resultsContainer.innerHTML = `<p class="text-danger">An error occurred while fetching results.</p>`;
+      });
+});
+</script>
+{% endblock %}

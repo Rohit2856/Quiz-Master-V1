@@ -27,7 +27,7 @@
                             <td>{{ score.total_scored }}</td>
                             <td>{{ score.time_stamp_of_attempt.strftime('%d %b %Y') }}</td>
                             <td>
-                                <a href="{{ url_for('quiz.results', quiz_id=score.quiz.id) }}" 
+                                <a href="{{ url_for('user.results', quiz_id=score.quiz.id) }}" 
                                    class="btn btn-sm btn-primary">
                                     View
                                 </a>

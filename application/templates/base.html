@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html>  
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>{% block title %}Quiz Master{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
@@ -17,11 +18,10 @@
     {% block head %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="bi bi-question-circle"></i> Quiz Master
+                 Quiz Master
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
@@ -44,12 +44,22 @@
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('admin.manage_users') }}">Manage Users</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin.manage_quizzes') }}">Manage Quizzes</a></li>
+                                {% if chapters|length > 0 %}
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.manage_quizzes', chapter_id=chapters[0].id) }}">Manage Quizzes</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                         {% endif %}
                     {% endif %}
                 </ul>
+
+                <!-- Single Search Form -->
+                <form class="d-flex me-3" action="{{ url_for('main.search') }}" method="GET">
+                    <input class="form-control me-2" type="text" name="q" placeholder="Search..." required>
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
 
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
@@ -93,21 +103,11 @@
         </div>
     </nav>
 
+    <!-- Flash Messages Section -->
+    {% include 'partials/flash_messages.html' %}
+
     <!-- Main Content -->
     <main class="container flex-grow-1 mt-4">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show">
-                    {{ message|safe }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <!-- Content Block -->
         {% block content %}{% endblock %}
     </main>
 
@@ -116,14 +116,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <p class="mb-0">&copy; 2024 Quiz Master. All rights reserved.</p>
+                    <p class="mb-0">&copy; 2025 Quiz Master. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-end">
                     <a href="#" class="text-white text-decoration-none me-3">
-                        <i class="bi bi-info-circle"></i> About
+                        <i class="bi bi-info-circle"></i> Rohit Rai
                     </a>
                     <a href="#" class="text-white text-decoration-none">
-                        <i class="bi bi-envelope"></i> Contact
+                        <i class="bi bi-envelope"></i> 23F1000362@ds.study.iitm.ac.in
                     </a>
                 </div>
             </div>
@@ -135,7 +135,6 @@
     {% block scripts %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Ensure date input fields are set to 'date' type
             document.querySelectorAll('input[type="date"], input[name="dob"]').forEach(field => {
                 field.type = 'date';
             });
@@ -144,4 +143,3 @@
     {% endblock %}
 </body>
 </html>
-

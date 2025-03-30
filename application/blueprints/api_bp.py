@@ -1,17 +1,11 @@
-from flask import request 
-from flask import Blueprint, jsonify, request
+from flask import flash
+from flask import Blueprint, jsonify, redirect, request, url_for
 from flask_login import login_required, current_user
-from application import db
-from application.models import Subject, Score, Quiz, Question, User
-from application.decorators import admin_required
-from datetime import datetime, timezone
+from application.models import User, Subject, Quiz, Question
 
-# To initialize blueprint first
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-# --------------
-# Error Handlers 
-# --------------
+# Error handlers here...
 @api_bp.errorhandler(400)
 def bad_request(error):
     return jsonify({'error': 'Bad request'}), 400
@@ -35,55 +29,63 @@ def internal_error(error):
 # -------------
 # API Endpoints
 # -------------
-@api_bp.route('/subjects', methods=['GET'])
-@login_required
-def api_subjects():
-    """Get all subjects in JSON format"""
-    subjects = Subject.query.all()
-    return jsonify([{
-        "id": s.id,
-        "name": s.name,
-        "description": s.description
-    } for s in subjects])
 
-@api_bp.route('/scores/<int:user_id>', methods=['GET'])
-@admin_required
-def api_user_scores(user_id):
-    """Get quiz scores for specific user (admin only)"""
-    scores = Score.query.filter_by(user_id=user_id).all()
-    return jsonify([{
-        "quiz_id": s.quiz_id,
-        "score": s.total_scored,
-        "timestamp": s.time_stamp_of_attempt.isoformat()
-    } for s in scores])
-
-@api_bp.route('/quiz/<int:quiz_id>/questions', methods=['GET'])
+@api_bp.route('/search', methods=['GET'])
 @login_required
-def get_quiz_questions(quiz_id):
-    """Get quiz questions in JSON format"""
-    quiz = Quiz.query.get_or_404(quiz_id)
+
+def api_search():
+    search_term = request.args.get('q', '').strip()
+    # Check if the user is authenticated
+    if not current_user.is_authenticated:
+        flash("Please login first.", "warning")  # Flash a warning message
+        return redirect(url_for('auth.user_login'))
     
-    if not quiz.is_active():
-        return jsonify({'error': 'Quiz unavailable'}), 403
-        
-    return jsonify({
-        "quiz_id": quiz.id,
-        "remarks": quiz.remarks,
-        "duration": quiz.duration,
-        "questions": [{
-            "id": q.id,
-            "question": q.question_statement,
-            "options": [q.option1, q.option2, q.option3, q.option4],
-            "correct_option": q.correct_option
-        } for q in quiz.questions]
-    })
+    search_term = request.args.get('q', '').strip()
+    if not search_term:
+        return jsonify({}), 200
 
-@api_bp.route('/quiz/<int:quiz_id>/submit', methods=['POST'])
-@login_required
-def api_submit_quiz(quiz_id):
-    """Submit quiz answers via API"""
-    quiz = Quiz.query.get_or_404(quiz_id)
-    data = request.get_json()
-    
-    if datetime.now(timezone.utc) > quiz.end_time:
-        return jsonify({'error': 'Quiz time has expired'}), 403
+    if current_user.is_admin:
+        matched_users = User.query.filter(User.username.ilike(f'%{search_term}%')).all()
+        matched_subjects = Subject.query.filter(Subject.name.ilike(f'%{search_term}%')).all()
+        matched_quizzes = Quiz.query.filter(Quiz.quiz_name.ilike(f'%{search_term}%')).all()
+        matched_questions = Question.query.filter(Question.question_statement.ilike(f'%{search_term}%')).all()
+
+        results = {
+            'users': [{
+                'id': u.id,
+                'username': u.username,
+                'email': u.email
+            } for u in matched_users],
+            'subjects': [{
+                'id': s.id,
+                'name': s.name,
+                'description': s.description
+            } for s in matched_subjects],
+            'quizzes': [{
+                'id': q.id,
+                'quiz_name': q.quiz_name
+            } for q in matched_quizzes],
+            'questions': [{
+                'id': ques.id,
+                'question_statement': ques.question_statement,
+                'quiz_id': ques.quiz_id   # Ensure quiz_id is included
+            } for ques in matched_questions]
+        }
+    else:
+        matched_subjects = Subject.query.filter(Subject.name.ilike(f'%{search_term}%')).all()
+        matched_quizzes = Quiz.query.filter(Quiz.quiz_name.ilike(f'%{search_term}%')).all()
+
+        results = {
+            'subjects': [{
+                'id': s.id,
+                'name': s.name,
+                'description': s.description
+            } for s in matched_subjects],
+            'quizzes': [{
+                'id': q.id,
+                'quiz_name': q.quiz_name
+            } for q in matched_quizzes]
+        }
+
+    return jsonify(results), 200
+

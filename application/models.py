@@ -1,16 +1,10 @@
 from datetime import datetime, timezone, timedelta
+from flask import json
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from .extensions import db
-
-# Define models for the application 
-# User model for storing user details 
-# Subject model for storing subject details 
-# Chapter model for storing chapter details 
-# Quiz model for storing quiz details 
-# Question model for storing question details 
-# Score model for storing user quiz scores and attempts 
-# QuizAttempt model for tracking quiz attempts
+import pytz
+IST = pytz.timezone('Asia/Kolkata') # Indian Standard Time
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -19,14 +13,17 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
     qualification = db.Column(db.String(100))
     dob = db.Column(db.Date)
     bio = db.Column(db.Text)
     location = db.Column(db.String(100))
     avatar = db.Column(db.String(255), nullable=True)
     website = db.Column(db.String(200))  
-
+    is_admin = db.Column(db.Boolean, default=False)
+    @staticmethod
+    def get_admin():
+        """Fetch the single admin user."""
+        return User.query.filter_by(is_admin=True).first()
     # Security & tracking fields 
     is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
@@ -45,6 +42,10 @@ class User(UserMixin, db.Model):
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
+
+    def set_password(self, password):
+        """Hashes and stores the password."""
+        self.password_hash = generate_password_hash(password)   
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -76,9 +77,11 @@ class Chapter(db.Model):
 class Quiz(db.Model):
     __tablename__ = 'quizzes'
     id = db.Column(db.Integer, primary_key=True)
-    start_time = db.Column(db.DateTime, nullable=False)
-    duration = db.Column(db.Integer, nullable=False)  # Minutes duration of quiz 
-    remarks = db.Column(db.Text)
+    quiz_name = db.Column(db.String(100), nullable=False)
+    start_time = db.Column(db.DateTime, nullable=False) # Start time of quiz
+    end_time = db.Column(db.DateTime, nullable=True)    # End time of quiz
+    duration = db.Column(db.Integer, nullable=False)  # Minutes duration of quiz  
+    remarks = db.Column(db.Text, nullable=True)
     active = db.Column(db.Boolean, default=True)
     
     # Relationships with Chapter, Question, Score, and QuizAttempt models (one-to-many) 
@@ -87,13 +90,23 @@ class Quiz(db.Model):
     questions = db.relationship('Question', back_populates='quiz', cascade='all, delete-orphan')
     scores = db.relationship('Score', back_populates='quiz', cascade='all, delete-orphan')
     quiz_attempts = db.relationship('QuizAttempt', back_populates='quiz', cascade='all, delete-orphan')
-    start_time = db.Column(db.DateTime, nullable=False)
-    end_time = db.Column(db.DateTime, nullable=True)
     
     @property
-    def is_active(self):
-        now = datetime.now(timezone.utc)
-        return self.start_time <= now <= self.end_time
+    def status(self):
+        """Determine the quiz status: Active, Upcoming, or Ended (in IST)."""
+        ist = pytz.timezone("Asia/Kolkata")  # Define IST timezone
+        now_ist = datetime.now(ist)  # Get current time in IST
+        start_time_ist = self.start_time.astimezone(ist)
+        end_time_ist = start_time_ist + timedelta(minutes=self.duration)
+        if now_ist < start_time_ist:
+            return "Upcoming"  # Current time is before the start time
+        elif start_time_ist <= now_ist <= end_time_ist:
+            return "Active"  # Current time is within the quiz duration
+        else:
+            return "Ended"
+        
+    def __repr__(self):
+        return f"<Quiz {self.id} - {self.quiz_name}>"
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -120,6 +133,23 @@ class Score(db.Model):
     user = db.relationship('User', back_populates='scores')
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id', ondelete='CASCADE'), nullable=False)
     quiz = db.relationship('Quiz', back_populates='scores')
+    
+    answers_raw = db.Column('answers', db.Text, nullable=True)
+    
+    @property
+    def answers(self):
+        """Return the answers as a dictionary."""
+        if self.answers_raw:
+            try:
+                return json.loads(self.answers_raw)
+            except Exception:
+                return {}
+        return {}
+
+    @answers.setter
+    def answers(self, value):
+        """Serialize the dictionary to a JSON string."""
+        self.answers_raw = json.dumps(value)
     
     # Composite index for common queries on user and quiz 
     __table_args__ = (

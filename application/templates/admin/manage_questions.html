@@ -6,50 +6,66 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Questions for {{ quiz.remarks }}</h2>
         <div>
-            <a href="{{ url_for('admin.manage_quizzes', chapter_id=quiz.chapter_id) }}" 
+            <a href="{{ url_for('admin.manage_quizzes', chapter_id=quiz.chapter_id) }}"
                class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Quizzes
             </a>
-            <button class="btn btn-success" data-bs-toggle="modal" 
-                    data-bs-target="#addQuestionModal">
+            <button class="btn btn-success" data-bs-toggle="modal"
+                    data-bs-target="#questionModal"
+                    id="createQuestionBtn">
                 <i class="bi bi-plus-lg"></i> New Question
             </button>
         </div>
     </div>
 
-    <div class="modal fade" id="addQuestionModal" tabindex="-1">
+    <div class="modal fade" id="questionModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Question</h5>
+                    <h5 class="modal-title" id="modalTitle">Add New Question</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST" action="{{ url_for('admin.manage_questions') }}">
+                <form method="POST" action="{{ url_for('admin.manage_questions', quiz_id=quiz.id) }}">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="question_id" id="edit-question-id"> 
+
                     <div class="modal-body">
                         <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+
                         <div class="mb-3">
-                            <label class="form-label">Question</label>
-                            <textarea name="question" class="form-control" rows="3" required></textarea>
+                            <label class="form-label">Question Statement</label>
+                            <textarea class="form-control" rows="3" id="edit-question-statement"
+                                      name="question_statement" required></textarea>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Option 1</label>
-                            <input type="text" name="option1" class="form-control" required>
+                            <input type="text" class="form-control" id="edit-option1"
+                                   name="option1" required>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Option 2</label>
-                            <input type="text" name="option2" class="form-control" required>
+                            <input type="text" class="form-control" id="edit-option2"
+                                   name="option2" required>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Option 3</label>
-                            <input type="text" name="option3" class="form-control" required>
+                            <input type="text" class="form-control" id="edit-option3"
+                                   name="option3">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Option 4</label>
-                            <input type="text" name="option4" class="form-control" required>
+                            <input type="text" class="form-control" id="edit-option4"
+                                   name="option4">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Correct Option</label>
-                            <select name="correct_option" class="form-select" required>
+                            <select class="form-select" id="edit-correct-option"
+                                    name="correct_option" required>
                                 <option value="1">Option 1</option>
                                 <option value="2">Option 2</option>
                                 <option value="3">Option 3</option>
@@ -57,8 +73,9 @@
                             </select>
                         </div>
                     </div>
+
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" 
+                        <button type="button" class="btn btn-secondary"
                                 data-bs-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary">Save Question</button>
                     </div>
@@ -67,6 +84,7 @@
         </div>
     </div>
 
+    <!-- Questions Table -->
     <div class="card shadow">
         <div class="card-body">
             <div class="table-responsive">
@@ -81,34 +99,100 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for question in questions %}
-                        <tr>
-                            <td>{{ question.id }}</td>
-                            <td>{{ question.question_statement }}</td>
-                            <td>
-                                <ol>
-                                    <li>{{ question.option1 }}</li>
-                                    <li>{{ question.option2 }}</li>
-                                    <li>{{ question.option3 }}</li>
-                                    <li>{{ question.option4 }}</li>
-                                </ol>
-                            </td>
-                            <td>Option {{ question.correct_option }}</td>
-                            <td>
-                                <form class="d-inline" 
-                                      action="{{ url_for('admin.delete_question', question_id=question.id) }}" 
-                                      method="POST">
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i>
+                        {% if questions %}
+                            {% for question in questions %}
+                            <tr>
+                                <td>{{ question.id }}</td>
+                                <td>{{ question.question_statement }}</td>
+                                <td>
+                                    <ol>
+                                        <li>{{ question.option1 }}</li>
+                                        <li>{{ question.option2 }}</li>
+                                        <li>{{ question.option3 }}</li>
+                                        <li>{{ question.option4 }}</li>
+                                    </ol>
+                                </td>
+                                <td>Option {{ question.correct_option }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning edit-question-btn"
+                                            data-question-id="{{ question.id }}"
+                                            data-question-statement="{{ question.question_statement }}"
+                                            data-option1="{{ question.option1 }}"
+                                            data-option2="{{ question.option2 }}"
+                                            data-option3="{{ question.option3|default('', true) }}"
+                                            data-option4="{{ question.option4|default('', true) }}"
+                                            data-correct-option="{{ question.correct_option }}">
+                                        <i class="bi bi-pencil"></i> Edit
                                     </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
+
+                                    <form class="d-inline"
+                                          action="{{ url_for('admin.delete_question', question_id=question.id) }}"
+                                          method="POST">
+                                        {{ form.hidden_tag() }}
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No questions available.</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 1) "New Question" Button
+    const createQuestionBtn = document.getElementById("createQuestionBtn");
+    createQuestionBtn.addEventListener("click", function () {
+        // Reset fields for creation
+        document.getElementById("modalTitle").textContent = "Add New Question";
+        document.getElementById("edit-question-id").value = "";
+        document.getElementById("edit-question-statement").value = "";
+        document.getElementById("edit-option1").value = "";
+        document.getElementById("edit-option2").value = "";
+        document.getElementById("edit-option3").value = "";
+        document.getElementById("edit-option4").value = "";
+        document.getElementById("edit-correct-option").value = "1";
+    });
+
+    // 2) "Edit" Buttons
+    document.querySelectorAll(".edit-question-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            // Retrieve question data
+            const qId = this.getAttribute("data-question-id");
+            const qStatement = this.getAttribute("data-question-statement") || "";
+            const opt1 = this.getAttribute("data-option1") || "";
+            const opt2 = this.getAttribute("data-option2") || "";
+            const opt3 = this.getAttribute("data-option3") || "";
+            const opt4 = this.getAttribute("data-option4") || "";
+            const correctOpt = this.getAttribute("data-correct-option") || "1";
+
+            // Populate modal fields
+            document.getElementById("modalTitle").textContent = "Edit Question";
+            document.getElementById("edit-question-id").value = qId;
+            document.getElementById("edit-question-statement").value = qStatement;
+            document.getElementById("edit-option1").value = opt1;
+            document.getElementById("edit-option2").value = opt2;
+            document.getElementById("edit-option3").value = opt3;
+            document.getElementById("edit-option4").value = opt4;
+            document.getElementById("edit-correct-option").value = correctOpt;
+
+            // Show the modal
+            const questionModal = new bootstrap.Modal(document.getElementById("questionModal"));
+            questionModal.show();
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -9,36 +9,42 @@
             <a href="{{ url_for('admin.manage_subjects') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Subjects
             </a>
-            <button class="btn btn-success" data-bs-toggle="modal" 
-                    data-bs-target="#addChapterModal">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#chapterModal"
+                    id="createChapterBtn">
                 <i class="bi bi-plus-lg"></i> New Chapter
             </button>
         </div>
     </div>
 
-    <div class="modal fade" id="addChapterModal" tabindex="-1">
+    <div class="modal fade" id="chapterModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Chapter</h5>
+                    <h5 class="modal-title" id="modalTitle">Add New Chapter</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST" action="{{ url_for('admin.manage_chapters') }}">
+                <form method="POST" action="{{ url_for('admin.manage_chapters', subject_id=subject.id) }}">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="chapter_id" id="chapter-id">
+                    
                     <div class="modal-body">
-                        <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                        {{ form.subject_id(class="d-none") }}
+
                         <div class="mb-3">
                             <label class="form-label">Chapter Name</label>
-                            <input type="text" name="chapter_name" class="form-control" required>
+                            {{ form.name(id="chapter-name", class="form-control") }}
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea name="chapter_desc" class="form-control" rows="3"></textarea>
+                            {{ form.description(id="chapter-description", class="form-control", rows="3") }}
                         </div>
                     </div>
+                    
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" 
-                                data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save Chapter</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        {{ form.submit(class="btn btn-primary") }}
                     </div>
                 </form>
             </div>
@@ -64,15 +70,25 @@
                             <td>{{ chapter.name }}</td>
                             <td>{{ chapter.description|default('No description', true) }}</td>
                             <td>
-                                <a href="{{ url_for('admin.manage_quizzes', chapter_id=chapter.id) }}" 
+                                <!-- Manage Quizzes for this chapter -->
+                                <a href="{{ url_for('admin.manage_quizzes', chapter_id=chapter.id) }}"
                                    class="btn btn-sm btn-primary">
                                     <i class="bi bi-question-square"></i> Quizzes
                                 </a>
-                                <form class="d-inline" 
-                                      action="{{ url_for('admin.delete_chapter', chapter_id=chapter.id) }}" 
+                                <!-- "Edit"  fill the same modal with existing data -->
+                                <button class="btn btn-sm btn-warning edit-chapter-btn"
+                                        data-chapter-id="{{ chapter.id }}"
+                                        data-chapter-name="{{ chapter.name }}"
+                                        data-chapter-description="{{ chapter.description|default('', true) }}">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <!-- Delete Chapter -->
+                                <form class="d-inline"
+                                      action="{{ url_for('admin.delete_chapter', chapter_id=chapter.id) }}"
                                       method="POST">
+                                    {{ form.hidden_tag() }}
                                     <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i>
+                                        <i class="bi bi-trash"></i> Delete
                                     </button>
                                 </form>
                             </td>
@@ -83,5 +99,39 @@
             </div>
         </div>
     </div>
+
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+// JavaScript for handling modal actions
+document.addEventListener("DOMContentLoaded", function() {
+    // When "New Chapter" is clicked, clear the form
+    document.getElementById("createChapterBtn").addEventListener("click", function() {
+        document.getElementById("modalTitle").textContent = "Add New Chapter";
+        document.getElementById("chapter-id").value = "";
+        document.getElementById("chapter-name").value = "";
+        document.getElementById("chapter-description").value = "";
+    });
+
+    // For each "Edit" button, fill the modal with existing data
+    document.querySelectorAll(".edit-chapter-btn").forEach(button => {
+        button.addEventListener("click", function() {
+            const cId = this.getAttribute("data-chapter-id");
+            const cName = this.getAttribute("data-chapter-name") || "";
+            const cDesc = this.getAttribute("data-chapter-description") || "";
+
+            document.getElementById("modalTitle").textContent = "Edit Chapter";
+            document.getElementById("chapter-id").value = cId;
+            document.getElementById("chapter-name").value = cName;
+            document.getElementById("chapter-description").value = cDesc;
+
+            const chapterModal = new bootstrap.Modal(document.getElementById("chapterModal"));
+            chapterModal.show();
+        });
+    });
+});
+</script>
+{% endblock %}
+

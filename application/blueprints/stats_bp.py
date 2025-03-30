@@ -1,9 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 from flask_login import login_required, current_user
-from application import db
-from application.models import Quiz, Score, User
+from application.models import Quiz, Score
 from application.decorators import admin_required
-from datetime import datetime, timezone
 
 stats_bp = Blueprint('stats', __name__, url_prefix='/stats')
 

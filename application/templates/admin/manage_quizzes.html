@@ -1,52 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Manage Quizzes{% endblock %}
+{% block title %}Manage Quizzes for {{ chapter.name }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Quizzes for {{ chapter.name }}</h2>
         <div>
-            <a href="{{ url_for('admin.manage_chapters', subject_id=chapter.subject_id) }}" 
+            <a href="{{ url_for('admin.manage_chapters', subject_id=chapter.subject_id) }}"
                class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Chapters
+               <i class="bi bi-arrow-left"></i> Back to Chapters
             </a>
-            <button class="btn btn-success" data-bs-toggle="modal" 
-                    data-bs-target="#addQuizModal">
+            <a href="{{ url_for('admin.create_quiz', chapter_id=chapter.id) }}" class="btn btn-success">
                 <i class="bi bi-plus-lg"></i> New Quiz
-            </button>
+            </a>
         </div>
     </div>
 
-    <div class="modal fade" id="addQuizModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Quiz</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" action="{{ url_for('admin.manage_quizzes') }}">
-                    <div class="modal-body">
-                        <input type="hidden" name="chapter_id" value="{{ chapter.id }}">
-                        <div class="mb-3">
-                            <label class="form-label">Remarks</label>
-                            <input type="text" name="remarks" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Duration (HH:MM)</label>
-                            <input type="text" name="duration" class="form-control" 
-                                   placeholder="01:30" required pattern="[0-9]{1,2}:[0-9]{2}">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" 
-                                data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Create Quiz</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
+    <!-- Quizzes Table -->
     <div class="card shadow">
         <div class="card-body">
             <div class="table-responsive">
@@ -54,42 +32,58 @@
                     <thead class="table-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Remarks</th>
+                            <th>Chapter</th>
                             <th>Start Time</th>
                             <th>Duration</th>
+                            <th>Quiz Name</th>
+                            <th>Remarks</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for quiz in quizzes %}
-                        <tr>
-                            <td>{{ quiz.id }}</td>
-                            <td>{{ quiz.remarks }}</td>
-                            <td>{{ quiz.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>{{ quiz.duration }} min</td>
-                            <td>
-                                {% if quiz.is_active() %}
-                                <span class="badge bg-success">Active</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Ended</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a href="{{ url_for('admin.manage_questions', quiz_id=quiz.id) }}" 
-                                   class="btn btn-sm btn-primary">
-                                    <i class="bi bi-list-check"></i> Questions
-                                </a>
-                                <form class="d-inline" 
-                                      action="{{ url_for('admin.delete_quiz', quiz_id=quiz.id) }}" 
-                                      method="POST">
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
+                        {% if quizzes %}
+                            {% for quiz in quizzes %}
+                            <tr>
+                                <td>{{ quiz.id }}</td>
+                                <td>{{ quiz.chapter.name }}</td>
+                                <td>{{ quiz.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ quiz.duration // 60 }}h {{ quiz.duration % 60 }}m</td>
+                                <td>{{ quiz.quiz_name }}</td>
+                                <td>{{ quiz.remarks or '' }}</td>
+                                <td>
+                                    {% if quiz.status == "Active" %}
+                                        <span class="badge bg-success">{{ quiz.status }}</span>
+                                    {% elif quiz.status == "Upcoming" %}
+                                        <span class="badge bg-warning">{{ quiz.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ quiz.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.manage_questions', quiz_id=quiz.id) }}"
+                                       class="btn btn-sm btn-primary">
+                                        <i class="bi bi-list-check"></i> Questions
+                                    </a>
+                                    <a href="{{ url_for('admin.edit_quiz', chapter_id=chapter.id, quiz_id=quiz.id) }}"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    <form class="d-inline"
+                                          action="{{ url_for('admin.delete_quiz', quiz_id=quiz.id) }}"
+                                          method="POST">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">No quizzes available.</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
