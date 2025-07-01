@@ -1,5 +1,0 @@
-{
-    "python.defaultInterpreterPath": "MYENV/Scripts/python.exe",
-    "python.linting.pylintEnabled": true,
-    "python.formatting.provider": "black"
-}
